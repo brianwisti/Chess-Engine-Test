@@ -12,7 +12,7 @@ Go: 627.4ms
 Java: 1988ms  
 Nim: 533.6ms  
 Odin: 398ms  
-Python: 1,383,536ms or 22-23 minutes  
+Python: 51139ms  
 Rust: 463.03ms  
 Swift: 585ms  
 Zig: 335.8ms  
