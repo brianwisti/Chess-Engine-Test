@@ -13,7 +13,7 @@ Java: 1988ms
 Nim: 533.6ms  
 Odin: 398ms  
 Python: 1,383,536ms or 22-23 minutes  
-Rust: 536.4ms  
+Rust: 463.03ms  
 Swift: 585ms  
 Zig: 335.8ms  
   
