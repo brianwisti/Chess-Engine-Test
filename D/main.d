@@ -1881,7 +1881,7 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
     //    return 1;
     //}
 
-    int[4][250] move_list;
+    int[4][50] move_list = void;
     int move_count = 0;
 
     //Move generating variables
@@ -1916,13 +1916,7 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         if (temp_bitboard != 0)
         {
             const int pawn_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (pawn_square != -1)
-            {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = 1UL << pawn_square;
-                }
-            }
+            check_bitboard = 1UL << pawn_square;
             whiteKingCheckCount++;
         }
 
@@ -1931,13 +1925,7 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         if (temp_bitboard != 0)
         {
             const int knight_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (knight_square != -1)
-            {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = SQUARE_BBS[knight_square];
-                }
-            }
+            check_bitboard = SQUARE_BBS[knight_square];
             whiteKingCheckCount++;
         }
 
@@ -1947,18 +1935,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & occupancies_global[WHITE_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount++;
             }
             else
@@ -1981,18 +1962,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & occupancies_global[WHITE_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount++;
             }
             else
@@ -2016,18 +1990,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & occupancies_global[WHITE_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount++;
             }
             else
@@ -2050,18 +2017,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & occupancies_global[WHITE_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount++;
             }
             else
@@ -2688,13 +2648,7 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         if (temp_bitboard != 0)
         {
             const int pawn_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (pawn_square != -1)
-            {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = SQUARE_BBS[pawn_square];
-                }
-            }
+            check_bitboard = SQUARE_BBS[pawn_square];
             blackKingCheckCount++;
         }
 
@@ -2703,13 +2657,7 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         if (temp_bitboard != 0)
         {
             int knight_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (knight_square != -1)
-            {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = SQUARE_BBS[knight_square];
-                }
-            }
+            check_bitboard = SQUARE_BBS[knight_square];
             blackKingCheckCount++;
         }
 
@@ -2719,18 +2667,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & occupancies_global[BLACK_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount++;
             }
             else
@@ -2753,18 +2694,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & occupancies_global[BLACK_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount++;
             }
             else
@@ -2788,18 +2722,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & occupancies_global[BLACK_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount++;
             }
             else
@@ -2822,18 +2749,11 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         while (temp_bitboard != 0)
         {
             int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
-            if (piece_square == -1)
-            {
-                break;
-            }
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & occupancies_global[BLACK_OCCUPANCIES];
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount++;
             }
             else
@@ -2854,10 +2774,6 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
         if (blackKingCheckCount > 1)
         {
             const ulong occupancyWithoutBlackKing = occupancies_global[COMBINED_OCCUPANCIES] & (~bitboard_array_global[BK]);
-            if (blackKingPosition == -1)
-            {
-                return 0;
-            }
             temp_attack = KING_ATTACKS[blackKingPosition] & occupancies_global[WHITE_OCCUPANCIES];
 
             while (temp_attack != 0)
@@ -3460,10 +3376,10 @@ ulong PerftInlineGlobalOcc(const int depth, const int ply)
     ulong nodes = 0, priorNodes;
     int copyEp = ep_global;
     int[4] copy_castle;
-    copy_castle[0] = castle_rights_global[0];
-    copy_castle[1] = castle_rights_global[1];
-    copy_castle[2] = castle_rights_global[2];
-    copy_castle[3] = castle_rights_global[3];
+	copy_castle[0] = castle_rights_global[0];
+	copy_castle[1] = castle_rights_global[1];
+	copy_castle[2] = castle_rights_global[2];		
+	copy_castle[3] = castle_rights_global[3];
 
     for (size_t move_index = 0; move_index < move_count; ++move_index)
     {
