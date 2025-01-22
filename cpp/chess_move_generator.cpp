@@ -1,4 +1,5 @@
 
+
 #include <iostream>
 #include "constants.h"
 
@@ -529,6 +530,60 @@ void ParseFenGlobal(const char input[], const size_t startingIndex)
 }
 
 
+bool OutOfBounds(const int move)
+{
+    if (move < 0)
+    {
+        return true;
+    }
+    if (move > 63)
+    {
+        return true;
+    }
+    return false;
+}
+
+void PrintMoveNoNL(const int move[])
+{    //starting
+    if (OutOfBounds(move[MOVE_STARTING]) == true)
+    {
+        printf("%d", move[MOVE_STARTING]);
+    }
+    else
+    {
+        printf("%c", SQ_CHAR_X[move[MOVE_STARTING]]);
+        printf("%c", SQ_CHAR_Y[move[MOVE_STARTING]]);
+    }
+    //target
+    if (OutOfBounds(move[MOVE_TARGET]) == true)
+    {
+        printf("%d", move[MOVE_TARGET]);
+    }
+    else
+    {
+        printf("%c", SQ_CHAR_X[move[MOVE_TARGET]]);
+        printf("%c", SQ_CHAR_Y[move[MOVE_TARGET]]);
+    }
+    int tag = move[MOVE_TAG];
+    if (tag == TAG_BCaptureKnightPromotion || tag == TAG_BKnightPromotion || tag == TAG_WKnightPromotion || tag == TAG_WCaptureKnightPromotion)
+    {
+        printf("n");
+    }
+    else if (tag == TAG_BCaptureRookPromotion || tag == TAG_BRookPromotion || tag == TAG_WRookPromotion || tag == TAG_WCaptureRookPromotion)
+    {
+        printf("r");
+    }
+    else if (tag == TAG_BCaptureBishopPromotion || tag == TAG_BBishopPromotion || tag == TAG_WBishopPromotion || tag == TAG_WCaptureBishopPromotion)
+    {
+        printf("b");
+    }
+    else if (tag == TAG_BCaptureQueenPromotion || tag == TAG_BQueenPromotion || tag == TAG_WQueenPromotion || tag == TAG_WCaptureQueenPromotion)
+    {
+        printf("q");
+    }
+}
+
+
 unsigned long long PerftInlineGlobal(const int depth, const int ply)
 {
     //if (depth == 0)
@@ -536,7 +591,7 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
     //    return 1;
     //}
 
-    int move_list[250][4];
+    int move_list[50][4];
     int move_count = 0;
 
     //Move generating variables
@@ -576,10 +631,7 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         {
             const int pawn_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
 
-            if (check_bitboard == 0)
-            {
-                check_bitboard = 1ULL << pawn_square;
-            }
+            check_bitboard = 1ULL << pawn_square;
 
             whiteKingCheckCount++;
         }
@@ -590,10 +642,7 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         {
             const int knight_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
 
-            if (check_bitboard == 0)
-            {
-                check_bitboard = SQUARE_BBS[knight_square];
-            }
+            check_bitboard = SQUARE_BBS[knight_square];
 
             whiteKingCheckCount++;
         }
@@ -608,10 +657,7 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount++;
             }
             else
@@ -638,10 +684,8 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
+                
                 whiteKingCheckCount++;
             }
             else
@@ -669,10 +713,8 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
+                
                 whiteKingCheckCount++;
             }
             else
@@ -699,10 +741,8 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
+                
                 whiteKingCheckCount++;
             }
             else
@@ -1360,10 +1400,7 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         {
             const int pawn_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
 
-            if (check_bitboard == 0)
-            {
-                check_bitboard = SQUARE_BBS[pawn_square];
-            }
+            check_bitboard = SQUARE_BBS[pawn_square];
 
             blackKingCheckCount++;
         }
@@ -1372,12 +1409,9 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         temp_bitboard = bitboard_array_global[WN] & KNIGHT_ATTACKS[blackKingPosition];
         if (temp_bitboard != 0)
         {
-            int knight_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
+            const int knight_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
 
-            if (check_bitboard == 0)
-            {
-                check_bitboard = SQUARE_BBS[knight_square];
-            }
+            check_bitboard = SQUARE_BBS[knight_square];
 
             blackKingCheckCount++;
         }
@@ -1387,20 +1421,18 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         temp_bitboard = bitboard_array_global[WB] & bishopAttacksChecks;
         while (temp_bitboard != 0)
         {
-            int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
+            const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
+                
                 blackKingCheckCount++;
             }
             else
             {
-                int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
+                const int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0)
@@ -1417,21 +1449,19 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         temp_bitboard = bitboard_array_global[WQ] & bishopAttacksChecks;
         while (temp_bitboard != 0)
         {
-            int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
+            const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
 
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
+                
                 blackKingCheckCount++;
             }
             else
             {
-                int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
+                const int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0)
@@ -1449,20 +1479,18 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         temp_bitboard = bitboard_array_global[WR] & rook_attacks;
         while (temp_bitboard != 0)
         {
-            int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
+            const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
+                
                 blackKingCheckCount++;
             }
             else
             {
-                int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
+                const int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0)
@@ -1479,20 +1507,18 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
         temp_bitboard = bitboard_array_global[WQ] & rook_attacks;
         while (temp_bitboard != 0)
         {
-            int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
+            const int piece_square = (DEBRUIJN64[MAGIC * (temp_bitboard ^ (temp_bitboard - 1)) >> 58]);
             temp_pin_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0)
             {
-                if (check_bitboard == 0)
-                {
-                    check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
-                }
+                check_bitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
+                
                 blackKingCheckCount++;
             }
             else
             {
-                int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
+                const int pinned_square = (DEBRUIJN64[MAGIC * (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58]);
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0)
@@ -2136,12 +2162,14 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
     }
 
     unsigned long long nodes = 0;// , priorNodes;
-    int copyEp = ep_global;
-    bool copy_castle[4];
-    copy_castle[0] = castle_rights_global[0];
-    copy_castle[1] = castle_rights_global[1];
-    copy_castle[2] = castle_rights_global[2];
-    copy_castle[3] = castle_rights_global[3];
+    const int copyEp = ep_global;
+    const bool copy_castle[4] =
+    {
+        castle_rights_global[0],
+        castle_rights_global[1],
+        castle_rights_global[2],
+        castle_rights_global[3],
+    };
 
     for (size_t move_index = 0; move_index < move_count; ++move_index)
     {
@@ -2486,7 +2514,7 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
 
 #pragma endregion
 
-        //priorNodes = nodes;
+        const int priorNodes = nodes;
         nodes += PerftInlineGlobal(depth - 1, ply + 1);
 
 #pragma region Unmakemove
@@ -2670,8 +2698,8 @@ unsigned long long PerftInlineGlobal(const int depth, const int ply)
 
 //if (ply == 0)
 //{
-   // PrintMoveNoNL(move_list[move_index]);
-  //  printf(": %llu\n", nodes - priorNodes);
+    //PrintMoveNoNL(move_list[move_index]);
+    //printf(": %llu\n", nodes - priorNodes);
 //}
     }
 
@@ -2693,13 +2721,22 @@ void RunPerftInlineGlobal(const int depth)
     printf("Elapsed time: %.2f milliseconds\n", elapsed_milliseconds);
 }
 
+void print_all()
+{
+    for (size_t i = 0; i < 12; i++)
+    {
+        std::cout << i << ": " << *bitboardArray[i] << '\n';
+    }
+}
+
 
 int main()
 {
     CreateBoard();
 
-    //std::cin.get();
     ParseFenGlobal(FEN_STARTING_POSITION, 0);
+    //std::cin.get();
+    //print_all();
     RunPerftInlineGlobal(6);
 
     return 0;
