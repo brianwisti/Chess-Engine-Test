@@ -10,7 +10,7 @@ C++: 331.2ms
 D: 438ms  
 Go: 627.4ms  
 Java: 1988ms  
-Nim: 533.6ms  
+Nim: 429ms  
 Odin: 398ms  
 Python: 51139ms  
 Rust: 463.03ms  
