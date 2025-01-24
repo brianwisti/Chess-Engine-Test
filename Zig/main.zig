@@ -653,7 +653,7 @@ const FILE_TO_SQUARE_BBS = [_]u64
     72340172838076673, 144680345676153346, 289360691352306692, 578721382704613384, 1157442765409226768, 2314885530818453536, 4629771061636907072, 9259542123273814144,
 };
 
-pub inline fn GetBishopAttacksFast(startingSquare: usize, occupancy: u64) u64 {
+pub inline fn getBishopAttacksFast(startingSquare: usize, occupancy: u64) u64 {
 
     var mutableOccupancy: u64 = occupancy;
     const shiftAmount: u64 = 64 - BISHOP_REL_BITS[startingSquare];
@@ -665,7 +665,7 @@ pub inline fn GetBishopAttacksFast(startingSquare: usize, occupancy: u64) u64 {
     return constants.BISHOP_ATTACKS[startingSquare][@truncate(mutableOccupancy)];
 }
 
-pub inline fn GetRookAttacksFast(startingSquare: usize, occupancy: u64) u64 {
+pub inline fn getRookAttacksFast(startingSquare: usize, occupancy: u64) u64 {
 
     var mutableOccupancy: u64 = occupancy;
     const shiftAmount: u64 = 64 - ROOK_REL_BITS[startingSquare];
@@ -684,35 +684,35 @@ const BLACK_END_INDEX = BK;
 
 const TAG_NONE = 0;
 const TAG_CAPTURE = 1;
-const TAG_WHITEEP = 2;
-const TAG_BLACKEP = 3;
+const TAG_WHITE_EP = 2;
+const TAG_BLACK_EP = 3;
 const TAG_WCASTLEKS = 4;
 const TAG_WCASTLEQS = 5;
 const TAG_BCASTLEKS = 6;
 const TAG_BCASTLEQS = 7;
-const TAG_BKnightPromotion = 8; 
-const TAG_BBishopPromotion = 9; 
-const TAG_BQueenPromotion = 10; 
-const TAG_BRookPromotion = 11;
-const TAG_WKnightPromotion = 12;
-const TAG_WBishopPromotion = 13; 
-const TAG_WQueenPromotion = 14; 
-const TAG_WRookPromotion = 15;
-const TAG_BCaptureKnightPromotion = 16; 
-const TAG_BCaptureBishopPromotion = 17;
-const TAG_BCaptureQueenPromotion = 18;
-const TAG_BCaptureRookPromotion = 19;
-const TAG_WCaptureKnightPromotion = 20; 
-const TAG_WCaptureBishopPromotion = 21; 
-const TAG_WCaptureQueenPromotion = 22; 
-const TAG_WCaptureRookPromotion = 23;
-const TAG_DoublePawnWhite = 24; 
-const TAG_DoublePawnBlack = 25; 
+const TAG_B_N_PROMOTION = 8; 
+const TAG_B_B_PROMOTION = 9; 
+const TAG_B_Q_PROMOTION = 10; 
+const TAG_B_R_PROMOTION = 11;
+const TAG_W_N_PROMOTION = 12;
+const TAG_W_B_PROMOTION = 13; 
+const TAG_W_Q_PROMOTION = 14; 
+const TAG_W_R_PROMOTION = 15;
+const TAG_B_N_PROMOTION_CAP = 16; 
+const TAG_B_B_PROMOTION_CAP = 17;
+const TAG_B_Q_PROMOTION_CAP = 18;
+const TAG_B_R_PROMOTION_CAP = 19;
+const TAG_W_N_PROMOTION_CAP = 20; 
+const TAG_W_B_PROMOTION_CAP = 21; 
+const TAG_W_Q_PROMOTION_CAP = 22; 
+const TAG_W_R_PROMOTION_CAP = 23;
+const TAG_W_DOUBLE_PAWN = 24; 
+const TAG_B_DOUBLE_PAWN = 25; 
 const TAG_CHECK = 26; 
 const TAG_CHECK_CAPTURE = 27;
 
-const PROMOTION_START = TAG_BKnightPromotion;
-const PROMOTION_END_INCLUSIVE = TAG_WCaptureRookPromotion;
+const PROMOTION_START = TAG_B_N_PROMOTION;
+const PROMOTION_END_INCLUSIVE = TAG_W_R_PROMOTION_CAP;
 
 const A8 = 0; const B8 = 1; const C8 = 2; const D8 = 3; const E8 = 4; const F8 = 5; const G8 = 6; const H8 = 7;
 const A7 = 8; const B7 = 9; const C7 = 10; const D7 = 11; const E7 = 12; const F7 = 13; const G7 = 14; const H7 = 15;
@@ -1037,14 +1037,14 @@ fn Is_Square_Attacked_By_Black_Global(square:usize, occupancy: u64) bool {
     if ((bitboard_array_global[BK] & KING_ATTACKS[square]) != 0) {
         return true;
     }
-    const bishopAttacks = GetBishopAttacksFast(square, occupancy);
+    const bishopAttacks = getBishopAttacksFast(square, occupancy);
     if ((bitboard_array_global[BB] & bishopAttacks) != 0) {
         return true;
     }
     if ((bitboard_array_global[BQ] & bishopAttacks) != 0) {
         return true;
     }
-    const rookAttacks = GetRookAttacksFast(square, occupancy);
+    const rookAttacks = getRookAttacksFast(square, occupancy);
     if ((bitboard_array_global[BR] & rookAttacks) != 0) {
         return true;
     }
@@ -1064,14 +1064,14 @@ fn Is_Square_Attacked_By_White_Global(square:usize, occupancy:u64) bool {
     if ((bitboard_array_global[WK] & KING_ATTACKS[square]) != 0) {
         return true;
     }
-    const bishopAttacks = GetBishopAttacksFast(square, occupancy);
+    const bishopAttacks = getBishopAttacksFast(square, occupancy);
     if ((bitboard_array_global[WB] & bishopAttacks) != 0) {
         return true;
     }
     if ((bitboard_array_global[WQ] & bishopAttacks) != 0) {
         return true;
     }
-    const rookAttacks = GetRookAttacksFast(square, occupancy);
+    const rookAttacks = getRookAttacksFast(square, occupancy);
     if ((bitboard_array_global[WR] & rookAttacks) != 0) {
         return true;
     }
@@ -1113,8 +1113,8 @@ fn perftInline(depth:i8, ply:u8) usize {
     var move_count:usize = 0;
 
     //Move generating variables
-    const WHITE_OCCUPANCIES_LOCAL:u64 = board.bitboard_array_global[0] | board.bitboard_array_global[1] | board.bitboard_array_global[2] | board.bitboard_array_global[3] | board.bitboard_array_global[4] | board.bitboard_array_global[5];
-    const BLACK_OCCUPANCIES_LOCAL:u64 = board.bitboard_array_global[6] | board.bitboard_array_global[7] | board.bitboard_array_global[8] | board.bitboard_array_global[9] | board.bitboard_array_global[10] | board.bitboard_array_global[11];
+    const WHITE_OCCUPANCIES_LOCAL:u64 = bitboard_array_global[0] | bitboard_array_global[1] | bitboard_array_global[2] | bitboard_array_global[3] | bitboard_array_global[4] | bitboard_array_global[5];
+    const BLACK_OCCUPANCIES_LOCAL:u64 = bitboard_array_global[6] | bitboard_array_global[7] | bitboard_array_global[8] | bitboard_array_global[9] | bitboard_array_global[10] | bitboard_array_global[11];
     const COMBINED_OCCUPANCIES_LOCAL:u64 = WHITE_OCCUPANCIES_LOCAL | BLACK_OCCUPANCIES_LOCAL;
     const EMPTY_OCCUPANCIES:u64 = ~COMBINED_OCCUPANCIES_LOCAL;
     var temp_bitboard:u64 = undefined;
@@ -1123,61 +1123,61 @@ fn perftInline(depth:i8, ply:u8) usize {
     var temp_attack:u64 = undefined; 
     var temp_empty:u64 = undefined; 
     var temp_captures:u64 = undefined;
-    var starting_square:usize = gen_const.NO_SQUARE;
-    var target_square:usize = gen_const.NO_SQUARE;
+    var starting_square:usize = NO_SQUARE;
+    var target_square:usize = NO_SQUARE;
 
     var pinArray:[8][2]usize = [8][2]usize {
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE },
-        .{ gen_const.NO_SQUARE, gen_const.NO_SQUARE},
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE },
+        .{ NO_SQUARE, NO_SQUARE},
     };
 
     var pinNumber:usize = 0;
 
-    if (board.is_white_global == true) {
+    if (is_white_global == true) {
         var whiteKingCheckCount:usize = 0;
-        const whiteKingPosition:usize = gen_const.DEBRUIJN64[gen_const.MAGIC *% (board.bitboard_array_global[gen_const.WK] ^ (board.bitboard_array_global[gen_const.WK] - 1)) >> 58]; 
+        const whiteKingPosition:usize = DEBRUIJN64[MAGIC *% (bitboard_array_global[WK] ^ (bitboard_array_global[WK] - 1)) >> 58]; 
 
         //pawns
-        temp_bitboard = board.bitboard_array_global[gen_const.BP] & move_constants.WHITE_PAWN_ATTACKS[whiteKingPosition];
+        temp_bitboard = bitboard_array_global[BP] & WHITE_PAWN_ATTACKS[whiteKingPosition];
         if (temp_bitboard != 0) {
-            const pawn_square:usize = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
-            check_bitboard = move_constants.SQUARE_BBS[pawn_square];
+            const pawn_square:usize = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            check_bitboard = SQUARE_BBS[pawn_square];
             
             whiteKingCheckCount+=1;
         }
 
         //knights
-        temp_bitboard = board.bitboard_array_global[gen_const.BN] & move_constants.KNIGHT_ATTACKS[whiteKingPosition];
+        temp_bitboard = bitboard_array_global[BN] & KNIGHT_ATTACKS[whiteKingPosition];
         if (temp_bitboard != 0) {
-            const knight_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
-            check_bitboard = move_constants.SQUARE_BBS[knight_square];
+            const knight_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            check_bitboard = SQUARE_BBS[knight_square];
             
             whiteKingCheckCount+=1;
         }
 
         //bishops
-        const  bishopAttacksChecks = gen_moves.getBishopAttacksFast(whiteKingPosition, BLACK_OCCUPANCIES_LOCAL);
-        temp_bitboard = board.bitboard_array_global[gen_const.BB] & bishopAttacksChecks;
+        const  bishopAttacksChecks = getBishopAttacksFast(whiteKingPosition, BLACK_OCCUPANCIES_LOCAL);
+        temp_bitboard = bitboard_array_global[BB] & bishopAttacksChecks;
         while (temp_bitboard != 0) {
-            const  piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const  piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount+=1;
             } else {
-                const pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0) {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1185,9 +1185,9 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
 
         //queen
-        temp_bitboard = board.bitboard_array_global[gen_const.BQ] & bishopAttacksChecks;
+        temp_bitboard = bitboard_array_global[BQ] & bishopAttacksChecks;
         while (temp_bitboard != 0) {
-            const  piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const  piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
 
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES_LOCAL;
 
@@ -1195,12 +1195,12 @@ fn perftInline(depth:i8, ply:u8) usize {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount+=1;
             } else {
-                const  pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const  pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0) {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1208,23 +1208,23 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
 
         //rook
-        const  rook_attacks = gen_moves.getRookAttacksFast(whiteKingPosition, BLACK_OCCUPANCIES_LOCAL);
-        temp_bitboard = board.bitboard_array_global[gen_const.BR] & rook_attacks;
+        const  rook_attacks = getRookAttacksFast(whiteKingPosition, BLACK_OCCUPANCIES_LOCAL);
+        temp_bitboard = bitboard_array_global[BR] & rook_attacks;
         while (temp_bitboard != 0)
         {
-            const  piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const  piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount+=1;
             } else {
-                const  pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const  pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0) {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1232,22 +1232,22 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
 
         //queen
-        temp_bitboard = board.bitboard_array_global[gen_const.BQ] & rook_attacks;
+        temp_bitboard = bitboard_array_global[BQ] & rook_attacks;
         while (temp_bitboard != 0)
         {
-            const  piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const  piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][piece_square];
                 whiteKingCheckCount+=1;
             } else {
-                const  pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const  pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0) {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1255,172 +1255,172 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
  
         if (whiteKingCheckCount > 1) {
-            const occupanciesWithoutWhiteKing = COMBINED_OCCUPANCIES_LOCAL & (~board.bitboard_array_global[gen_const.WK]);
-            temp_attack = move_constants.KING_ATTACKS[whiteKingPosition];
+            const occupanciesWithoutWhiteKing = COMBINED_OCCUPANCIES_LOCAL & (~bitboard_array_global[WK]);
+            temp_attack = KING_ATTACKS[whiteKingPosition];
             temp_empty = temp_attack & EMPTY_OCCUPANCIES;
             while (temp_empty != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_empty ^ (temp_empty - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_empty ^ (temp_empty - 1)) >> 58];
                 temp_empty &= temp_empty - 1;
 
-                if ((board.bitboard_array_global[gen_const.BP] & move_constants.WHITE_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BB] & bishopAttacks) != 0) {
+                const bishopAttacks = getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const rookAttacks = gen_moves.getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BR] & rookAttacks) != 0) {
+                const rookAttacks = getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = whiteKingPosition;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WK;
+                move_list[move_count][MOVE_STARTING] = whiteKingPosition;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_NONE;
+                move_list[move_count][MOVE_PIECE] = WK;
                 move_count+=1;
             }
 
             //captures
             temp_captures = temp_attack & BLACK_OCCUPANCIES_LOCAL;
             while (temp_captures != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_captures ^ (temp_captures - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_captures ^ (temp_captures - 1)) >> 58];
                 temp_captures &= temp_captures - 1;
 
-                if ((board.bitboard_array_global[gen_const.BP] & move_constants.WHITE_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BB] & bishopAttacks) != 0) {
+                const bishopAttacks = getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const  rookAttacks = gen_moves.getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BR] & rookAttacks) != 0) {
+                const  rookAttacks = getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = whiteKingPosition;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WK;
+                move_list[move_count][MOVE_STARTING] = whiteKingPosition;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                move_list[move_count][MOVE_PIECE] = WK;
                 move_count+=1;
             }
         } else {
 
             if (whiteKingCheckCount == 0) {
-                check_bitboard = gen_const.MAX_ULONG;
+                check_bitboard = MAX_ULONG;
             }
 
-            const  occupanciesWithoutWhiteKing = COMBINED_OCCUPANCIES_LOCAL & (~board.bitboard_array_global[gen_const.WK]);
-            temp_attack = move_constants.KING_ATTACKS[whiteKingPosition];
+            const  occupanciesWithoutWhiteKing = COMBINED_OCCUPANCIES_LOCAL & (~bitboard_array_global[WK]);
+            temp_attack = KING_ATTACKS[whiteKingPosition];
             temp_empty = temp_attack & EMPTY_OCCUPANCIES;
             while (temp_empty != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_empty ^ (temp_empty - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_empty ^ (temp_empty - 1)) >> 58];
                 temp_empty &= temp_empty - 1;
 
-                if ((board.bitboard_array_global[gen_const.BP] & move_constants.WHITE_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BB] & bishopAttacks) != 0) {
+                const bishopAttacks = getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const rookAttacks = gen_moves.getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BR] & rookAttacks) != 0) {
+                const rookAttacks = getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = whiteKingPosition;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WK;
+                move_list[move_count][MOVE_STARTING] = whiteKingPosition;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_NONE;
+                move_list[move_count][MOVE_PIECE] = WK;
                 move_count+=1;
             }
 
             //captures
             temp_captures = temp_attack & BLACK_OCCUPANCIES_LOCAL;
             while (temp_captures != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_captures ^ (temp_captures - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_captures ^ (temp_captures - 1)) >> 58];
                 temp_captures &= temp_captures - 1;
 
-                if ((board.bitboard_array_global[gen_const.BP] & move_constants.WHITE_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[BK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BB] & bishopAttacks) != 0) {
+                const bishopAttacks = getBishopAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const rookAttacks = gen_moves.getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
-                if ((board.bitboard_array_global[gen_const.BR] & rookAttacks) != 0) {
+                const rookAttacks = getRookAttacksFast(target_square, occupanciesWithoutWhiteKing);
+                if ((bitboard_array_global[BR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.BQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[BQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = whiteKingPosition;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WK;
+                move_list[move_count][MOVE_STARTING] = whiteKingPosition;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                move_list[move_count][MOVE_PIECE] = WK;
                 move_count+=1;
             }
 
             if (whiteKingCheckCount == 0) {
-                if (board.castle_rights_global[gen_const.WKS_CASTLE_RIGHTS] == true) {
-                    if (whiteKingPosition == gen_const.E1) { //king on e1
-                        if ((gen_const.WKS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) { //f1 and g1 empty
-                            if ((board.bitboard_array_global[gen_const.WR] & move_constants.SQUARE_BBS[gen_const.H1]) != 0) { //rook on h1
-                                if (board.isSquareAttackedByBlack(gen_const.F1, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                    if (board.isSquareAttackedByBlack(gen_const.G1, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                        move_list[move_count][gen_const.MOVE_STARTING] = gen_const.E1;
-                                        move_list[move_count][gen_const.MOVE_TARGET] = gen_const.G1;
-                                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_WCASTLEKS;
-                                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WK;
+                if (castle_rights_global[WKS_CASTLE_RIGHTS] == true) {
+                    if (whiteKingPosition == E1) { //king on e1
+                        if ((WKS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) { //f1 and g1 empty
+                            if ((bitboard_array_global[WR] & SQUARE_BBS[H1]) != 0) { //rook on h1
+                                if (Is_Square_Attacked_By_Black_Global(F1, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                    if (Is_Square_Attacked_By_Black_Global(G1, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                        move_list[move_count][MOVE_STARTING] = E1;
+                                        move_list[move_count][MOVE_TARGET] = G1;
+                                        move_list[move_count][MOVE_TAG] = TAG_WCASTLEKS;
+                                        move_list[move_count][MOVE_PIECE] = WK;
                                         move_count+=1;
                                     }
                                 }
@@ -1428,16 +1428,16 @@ fn perftInline(depth:i8, ply:u8) usize {
                         }
                     }
                 }
-                if (board.castle_rights_global[gen_const.WQS_CASTLE_RIGHTS] == true) {
-                    if (whiteKingPosition == gen_const.E1) { //king on e1
-                        if ((gen_const.WQS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) { //f1 and g1 empty
-                            if ((board.bitboard_array_global[gen_const.WR] & move_constants.SQUARE_BBS[gen_const.A1]) != 0) { //rook on h1
-                                if (board.isSquareAttackedByBlack(gen_const.C1, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                    if (board.isSquareAttackedByBlack(gen_const.D1, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                        move_list[move_count][gen_const.MOVE_STARTING] = gen_const.E1;
-                                        move_list[move_count][gen_const.MOVE_TARGET] = gen_const.C1;
-                                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_WCASTLEQS;
-                                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WK;
+                if (castle_rights_global[WQS_CASTLE_RIGHTS] == true) {
+                    if (whiteKingPosition == E1) { //king on e1
+                        if ((WQS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) { //f1 and g1 empty
+                            if ((bitboard_array_global[WR] & SQUARE_BBS[A1]) != 0) { //rook on h1
+                                if (Is_Square_Attacked_By_Black_Global(C1, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                    if (Is_Square_Attacked_By_Black_Global(D1, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                        move_list[move_count][MOVE_STARTING] = E1;
+                                        move_list[move_count][MOVE_TARGET] = C1;
+                                        move_list[move_count][MOVE_TAG] = TAG_WCASTLEQS;
+                                        move_list[move_count][MOVE_PIECE] = WK;
                                         move_count+=1;
                                     }
                                 }
@@ -1447,179 +1447,179 @@ fn perftInline(depth:i8, ply:u8) usize {
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.WN];
+            temp_bitboard = bitboard_array_global[WN];
 
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1; //removes the knight from that square to not infinitely loop
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                temp_attack = ((move_constants.KNIGHT_ATTACKS[starting_square] & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //gets knight captures
+                temp_attack = ((KNIGHT_ATTACKS[starting_square] & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //gets knight captures
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WN;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = WN;
                     move_count+=1;
                 }
 
-                temp_attack = ((move_constants.KNIGHT_ATTACKS[starting_square] & EMPTY_OCCUPANCIES) & check_bitboard) & temp_pin_bitboard;
+                temp_attack = ((KNIGHT_ATTACKS[starting_square] & EMPTY_OCCUPANCIES) & check_bitboard) & temp_pin_bitboard;
 
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WN;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = WN;
                     move_count+=1;
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.WP];
+            temp_bitboard = bitboard_array_global[WP];
 
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                if ((move_constants.SQUARE_BBS[starting_square - 8] & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up one square is empty 
-                    if (((move_constants.SQUARE_BBS[starting_square - 8] & check_bitboard) & temp_pin_bitboard) != 0) {
-                        if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_7_BITBOARD) != 0) { //if promotion
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square - 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_Q_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                if ((SQUARE_BBS[starting_square - 8] & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up one square is empty 
+                    if (((SQUARE_BBS[starting_square - 8] & check_bitboard) & temp_pin_bitboard) != 0) {
+                        if ((SQUARE_BBS[starting_square] & RANK_7_BITBOARD) != 0) { //if promotion
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square - 8;
+                            move_list[move_count][MOVE_TAG] = TAG_W_Q_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = WP;
                             move_count+=1;
 
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square - 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_R_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square - 8;
+                            move_list[move_count][MOVE_TAG] = TAG_W_R_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = WP;
                             move_count+=1;
 
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square - 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_B_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square - 8;
+                            move_list[move_count][MOVE_TAG] = TAG_W_B_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = WP;
                             move_count+=1;
 
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square - 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_N_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square - 8;
+                            move_list[move_count][MOVE_TAG] = TAG_W_N_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = WP;
                             move_count+=1;
 
                         } else {
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square - 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square - 8;
+                            move_list[move_count][MOVE_TAG] = TAG_NONE;
+                            move_list[move_count][MOVE_PIECE] = WP;
                             move_count+=1;
                         }
                     }
 
-                    if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_2_BITBOARD) != 0) { //if on rank 2
-                        if (((move_constants.SQUARE_BBS[starting_square - 16] & check_bitboard) & temp_pin_bitboard) != 0) { //if not pinned or 
-                            if (((move_constants.SQUARE_BBS[starting_square - 16]) & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up two squares and one square are empty
-                                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                move_list[move_count][gen_const.MOVE_TARGET] = starting_square - 16;
-                                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_DOUBLE_PAWN;
-                                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                    if ((SQUARE_BBS[starting_square] & RANK_2_BITBOARD) != 0) { //if on rank 2
+                        if (((SQUARE_BBS[starting_square - 16] & check_bitboard) & temp_pin_bitboard) != 0) { //if not pinned or 
+                            if (((SQUARE_BBS[starting_square - 16]) & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up two squares and one square are empty
+                                move_list[move_count][MOVE_STARTING] = starting_square;
+                                move_list[move_count][MOVE_TARGET] = starting_square - 16;
+                                move_list[move_count][MOVE_TAG] = TAG_W_DOUBLE_PAWN;
+                                move_list[move_count][MOVE_PIECE] = WP;
                                 move_count+=1;
                             }
                         }
                     }
                 }
 
-                temp_attack = ((move_constants.WHITE_PAWN_ATTACKS[starting_square] & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //if black piece diagonal to pawn
+                temp_attack = ((WHITE_PAWN_ATTACKS[starting_square] & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //if black piece diagonal to pawn
 
                 while (temp_attack != 0) {
 
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_7_BITBOARD) != 0) { //if promotion
+                    if ((SQUARE_BBS[starting_square] & RANK_7_BITBOARD) != 0) { //if promotion
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_Q_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_W_Q_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = WP;
                         move_count+=1;
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_R_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_W_R_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = WP;
                         move_count+=1;
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_B_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_W_B_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = WP;
                         move_count+=1;
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_W_N_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_W_N_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = WP;
                         move_count+=1;
                     } else {
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                        move_list[move_count][MOVE_PIECE] = WP;
                         move_count+=1;
                     }
                 }
 
-                if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_5_BITBOARD) != 0) { //check rank for ep
-                    if (board.ep_global != gen_const.NO_SQUARE) {
-                        if ((((move_constants.WHITE_PAWN_ATTACKS[starting_square] & move_constants.SQUARE_BBS[board.ep_global]) & check_bitboard) & temp_pin_bitboard) != 0) {
-                            if ((board.bitboard_array_global[gen_const.WK] & gen_const.RANK_5_BITBOARD) == 0) { //if no king on rank 5
-                                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                move_list[move_count][gen_const.MOVE_TARGET] = board.ep_global;
-                                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_WHITE_EP;
-                                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                if ((SQUARE_BBS[starting_square] & RANK_5_BITBOARD) != 0) { //check rank for ep
+                    if (ep_global != NO_SQUARE) {
+                        if ((((WHITE_PAWN_ATTACKS[starting_square] & SQUARE_BBS[ep_global]) & check_bitboard) & temp_pin_bitboard) != 0) {
+                            if ((bitboard_array_global[WK] & RANK_5_BITBOARD) == 0) { //if no king on rank 5
+                                move_list[move_count][MOVE_STARTING] = starting_square;
+                                move_list[move_count][MOVE_TARGET] = ep_global;
+                                move_list[move_count][MOVE_TAG] = TAG_WHITE_EP;
+                                move_list[move_count][MOVE_PIECE] = WP;
                                 move_count+=1;
-                            } else if ((board.bitboard_array_global[gen_const.BR] & gen_const.RANK_5_BITBOARD) == 0 and (board.bitboard_array_global[gen_const.BQ] & gen_const.RANK_5_BITBOARD) == 0) { // if no b rook or queen on rank 5
-                                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                move_list[move_count][gen_const.MOVE_TARGET] = board.ep_global;
-                                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_WHITE_EP;
-                                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                            } else if ((bitboard_array_global[BR] & RANK_5_BITBOARD) == 0 and (bitboard_array_global[BQ] & RANK_5_BITBOARD) == 0) { // if no b rook or queen on rank 5
+                                move_list[move_count][MOVE_STARTING] = starting_square;
+                                move_list[move_count][MOVE_TARGET] = ep_global;
+                                move_list[move_count][MOVE_TAG] = TAG_WHITE_EP;
+                                move_list[move_count][MOVE_PIECE] = WP;
                                 move_count+=1;
                             } else { //wk and br or bq on rank 5
-                                var occupancyWithoutEPPawns:u64 = COMBINED_OCCUPANCIES_LOCAL & ~move_constants.SQUARE_BBS[starting_square];
-                                occupancyWithoutEPPawns &= ~move_constants.SQUARE_BBS[board.ep_global + 8];
+                                var occupancyWithoutEPPawns:u64 = COMBINED_OCCUPANCIES_LOCAL & ~SQUARE_BBS[starting_square];
+                                occupancyWithoutEPPawns &= ~SQUARE_BBS[ep_global + 8];
 
-                                const  rookAttacksFromKing = gen_moves.getRookAttacksFast(whiteKingPosition, occupancyWithoutEPPawns);
+                                const  rookAttacksFromKing = getRookAttacksFast(whiteKingPosition, occupancyWithoutEPPawns);
 
-                                if ((rookAttacksFromKing & board.bitboard_array_global[gen_const.BR]) == 0) {
-                                    if ((rookAttacksFromKing & board.bitboard_array_global[gen_const.BQ]) == 0) {
-                                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                        move_list[move_count][gen_const.MOVE_TARGET] = board.ep_global;
-                                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_WHITE_EP;
-                                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WP;
+                                if ((rookAttacksFromKing & bitboard_array_global[BR]) == 0) {
+                                    if ((rookAttacksFromKing & bitboard_array_global[BQ]) == 0) {
+                                        move_list[move_count][MOVE_STARTING] = starting_square;
+                                        move_list[move_count][MOVE_TARGET] = ep_global;
+                                        move_list[move_count][MOVE_TAG] = TAG_WHITE_EP;
+                                        move_list[move_count][MOVE_PIECE] = WP;
                                         move_count+=1;
                                     }
                                 }
@@ -1629,168 +1629,168 @@ fn perftInline(depth:i8, ply:u8) usize {
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.WR];
+            temp_bitboard = bitboard_array_global[WR];
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                const  rookAttacks = gen_moves.getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                const  rookAttacks = getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
 
                 temp_attack = ((rookAttacks & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WR;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = WR;
                     move_count+=1;
                 }
 
                 temp_attack = ((rookAttacks & EMPTY_OCCUPANCIES) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WR;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = WR;
                     move_count+=1;
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.WB];
+            temp_bitboard = bitboard_array_global[WB];
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                const bishopAttacks = gen_moves.getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                const bishopAttacks = getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
 
                 temp_attack = ((bishopAttacks & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WB;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = WB;
                     move_count+=1;
                 }
 
                 temp_attack = ((bishopAttacks & EMPTY_OCCUPANCIES) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WB;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = WB;
                     move_count+=1;
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.WQ];
+            temp_bitboard = bitboard_array_global[WQ];
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                var queenAttacks:u64 = gen_moves.getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
-                queenAttacks |= gen_moves.getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                var queenAttacks:u64 = getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                queenAttacks |= getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
 
                 temp_attack = ((queenAttacks & BLACK_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard;
 
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WQ;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = WQ;
                     move_count+=1;
                 }
 
                 temp_attack = ((queenAttacks & EMPTY_OCCUPANCIES) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.WQ;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = WQ;
                     move_count+=1;
                 }
             }
         }
     } else { //black move
          var blackKingCheckCount:usize = 0;
-         const blackKingPosition:usize = gen_const.DEBRUIJN64[gen_const.MAGIC *% (board.bitboard_array_global[gen_const.BK] ^ (board.bitboard_array_global[gen_const.BK] - 1)) >> 58];
+         const blackKingPosition:usize = DEBRUIJN64[MAGIC *% (bitboard_array_global[BK] ^ (bitboard_array_global[BK] - 1)) >> 58];
 
         //pawns
-        temp_bitboard = board.bitboard_array_global[gen_const.WP] & move_constants.BLACK_PAWN_ATTACKS[blackKingPosition];
+        temp_bitboard = bitboard_array_global[WP] & BLACK_PAWN_ATTACKS[blackKingPosition];
         if (temp_bitboard != 0) {
-            const  pawn_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
-            check_bitboard = move_constants.SQUARE_BBS[pawn_square];
+            const  pawn_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            check_bitboard = SQUARE_BBS[pawn_square];
             blackKingCheckCount+=1;
         }
 
         //knights
-        temp_bitboard = board.bitboard_array_global[gen_const.WN] & move_constants.KNIGHT_ATTACKS[blackKingPosition];
+        temp_bitboard = bitboard_array_global[WN] & KNIGHT_ATTACKS[blackKingPosition];
         if (temp_bitboard != 0) {
-            const knight_square:usize = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
-            check_bitboard = move_constants.SQUARE_BBS[knight_square];
+            const knight_square:usize = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            check_bitboard = SQUARE_BBS[knight_square];
             blackKingCheckCount+=1;
         }
 
         //bishops
-        const  bishopAttacksChecks = gen_moves.getBishopAttacksFast(blackKingPosition, WHITE_OCCUPANCIES_LOCAL);
-        temp_bitboard = board.bitboard_array_global[gen_const.WB] & bishopAttacksChecks;
+        const  bishopAttacksChecks = getBishopAttacksFast(blackKingPosition, WHITE_OCCUPANCIES_LOCAL);
+        temp_bitboard = bitboard_array_global[WB] & bishopAttacksChecks;
         while (temp_bitboard != 0) {
-            const piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount+=1;
             } else {
-                const pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0) {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1798,21 +1798,21 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
 
         //queen
-        temp_bitboard = board.bitboard_array_global[gen_const.WQ] & bishopAttacksChecks;
+        temp_bitboard = bitboard_array_global[WQ] & bishopAttacksChecks;
         while (temp_bitboard != 0) {
-            const piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount+=1;
             } else {
-                const pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0) {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1820,23 +1820,23 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
 
         //rook
-        const rook_attacks = gen_moves.getRookAttacksFast(blackKingPosition, WHITE_OCCUPANCIES_LOCAL);
-        temp_bitboard = board.bitboard_array_global[gen_const.WR] & rook_attacks;
+        const rook_attacks = getRookAttacksFast(blackKingPosition, WHITE_OCCUPANCIES_LOCAL);
+        temp_bitboard = bitboard_array_global[WR] & rook_attacks;
         while (temp_bitboard != 0) {
-            const piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount+=1;
             } else {
-                const pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0)
                 {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1844,22 +1844,22 @@ fn perftInline(depth:i8, ply:u8) usize {
         }
 
         //queen
-        temp_bitboard = board.bitboard_array_global[gen_const.WQ] & rook_attacks;
+        temp_bitboard = bitboard_array_global[WQ] & rook_attacks;
         while (temp_bitboard != 0) {
-            const piece_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+            const piece_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
             temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES_LOCAL;
 
             if (temp_pin_bitboard == 0) {
                 check_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][piece_square];
                 blackKingCheckCount+=1;
             } else {
-                const pinned_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
+                const pinned_square = DEBRUIJN64[MAGIC *% (temp_pin_bitboard ^ (temp_pin_bitboard - 1)) >> 58];
                 temp_pin_bitboard &= temp_pin_bitboard - 1;
 
                 if (temp_pin_bitboard == 0)
                 {
-                    pinArray[pinNumber][gen_const.PINNED_SQUARE_INDEX] = pinned_square;
-                    pinArray[pinNumber][gen_const.PINNING_PIECE_INDEX] = piece_square;
+                    pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square;
+                    pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square;
                     pinNumber+=1;
                 }
             }
@@ -1868,214 +1868,214 @@ fn perftInline(depth:i8, ply:u8) usize {
 
 
         if (blackKingCheckCount > 1) {
-            const  occupancyWithoutBlackKing = COMBINED_OCCUPANCIES_LOCAL & (~board.bitboard_array_global[gen_const.BK]);
-            temp_attack = move_constants.KING_ATTACKS[blackKingPosition] & WHITE_OCCUPANCIES_LOCAL;
+            const  occupancyWithoutBlackKing = COMBINED_OCCUPANCIES_LOCAL & (~bitboard_array_global[BK]);
+            temp_attack = KING_ATTACKS[blackKingPosition] & WHITE_OCCUPANCIES_LOCAL;
 
             while (temp_attack != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                 temp_attack &= temp_attack - 1;
 
-                if ((board.bitboard_array_global[gen_const.WP] & move_constants.BLACK_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WP] & BLACK_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 } 
-                if ((board.bitboard_array_global[gen_const.WN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WB] & bishopAttacks) != 0) {
+                const bishopAttacks = getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const rookAttacks = gen_moves.getRookAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WR] & rookAttacks) != 0) {
+                const rookAttacks = getRookAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BK;
+                move_list[move_count][MOVE_STARTING] = starting_square;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                move_list[move_count][MOVE_PIECE] = BK;
                 move_count+=1;
             }
 
-            temp_attack = move_constants.KING_ATTACKS[blackKingPosition] & ~COMBINED_OCCUPANCIES_LOCAL;
+            temp_attack = KING_ATTACKS[blackKingPosition] & ~COMBINED_OCCUPANCIES_LOCAL;
 
             while (temp_attack != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                 temp_attack &= temp_attack - 1;
 
-                if ((board.bitboard_array_global[gen_const.WP] & move_constants.WHITE_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WP] & WHITE_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WB] & bishopAttacks) != 0) {
+                const bishopAttacks = getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const rookAttacks = gen_moves.getRookAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WR] & rookAttacks) != 0) {
+                const rookAttacks = getRookAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BK;
+                move_list[move_count][MOVE_STARTING] = starting_square;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_NONE;
+                move_list[move_count][MOVE_PIECE] = BK;
                 move_count+=1;
             }
         } else {
             if (blackKingCheckCount == 0) {
-                check_bitboard = gen_const.MAX_ULONG;
+                check_bitboard = MAX_ULONG;
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.BP];
+            temp_bitboard = bitboard_array_global[BP];
 
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                if ((move_constants.SQUARE_BBS[starting_square + 8] & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up one square is empty
-                    if (((move_constants.SQUARE_BBS[starting_square + 8] & check_bitboard) & temp_pin_bitboard) != 0) {
-                        if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_2_BITBOARD) != 0) { //if promotion
+                if ((SQUARE_BBS[starting_square + 8] & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up one square is empty
+                    if (((SQUARE_BBS[starting_square + 8] & check_bitboard) & temp_pin_bitboard) != 0) {
+                        if ((SQUARE_BBS[starting_square] & RANK_2_BITBOARD) != 0) { //if promotion
                         
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square + 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_B_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square + 8;
+                            move_list[move_count][MOVE_TAG] = TAG_B_B_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = BP;
                             move_count+=1;
 
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square + 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_N_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square + 8;
+                            move_list[move_count][MOVE_TAG] = TAG_B_N_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = BP;
                             move_count+=1;
 
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square + 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_R_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square + 8;
+                            move_list[move_count][MOVE_TAG] = TAG_B_R_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = BP;
                             move_count+=1;
 
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square + 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_Q_PROMOTION;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square + 8;
+                            move_list[move_count][MOVE_TAG] = TAG_B_Q_PROMOTION;
+                            move_list[move_count][MOVE_PIECE] = BP;
                             move_count+=1;
                         } else {
-                            move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                            move_list[move_count][gen_const.MOVE_TARGET] = starting_square + 8;
-                            move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                            move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                            move_list[move_count][MOVE_STARTING] = starting_square;
+                            move_list[move_count][MOVE_TARGET] = starting_square + 8;
+                            move_list[move_count][MOVE_TAG] = TAG_NONE;
+                            move_list[move_count][MOVE_PIECE] = BP;
                             move_count+=1;
                         }
                     }
 
-                    if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_7_BITBOARD) != 0) { //if on rank 2
-                        if (((move_constants.SQUARE_BBS[starting_square + 16] & check_bitboard) & temp_pin_bitboard) != 0) {
-                            if (((move_constants.SQUARE_BBS[starting_square + 16]) & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up two squares and one square are empty
-                                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                move_list[move_count][gen_const.MOVE_TARGET] = starting_square + 16;
-                                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_DOUBLE_PAWN;
-                                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                    if ((SQUARE_BBS[starting_square] & RANK_7_BITBOARD) != 0) { //if on rank 2
+                        if (((SQUARE_BBS[starting_square + 16] & check_bitboard) & temp_pin_bitboard) != 0) {
+                            if (((SQUARE_BBS[starting_square + 16]) & COMBINED_OCCUPANCIES_LOCAL) == 0) { //if up two squares and one square are empty
+                                move_list[move_count][MOVE_STARTING] = starting_square;
+                                move_list[move_count][MOVE_TARGET] = starting_square + 16;
+                                move_list[move_count][MOVE_TAG] = TAG_B_DOUBLE_PAWN;
+                                move_list[move_count][MOVE_PIECE] = BP;
                                 move_count+=1;
                             }
                         }
                     }
                 }
 
-                temp_attack = ((move_constants.BLACK_PAWN_ATTACKS[starting_square] & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //if black piece diagonal to pawn
+                temp_attack = ((BLACK_PAWN_ATTACKS[starting_square] & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //if black piece diagonal to pawn
 
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58]; //find the bit
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58]; //find the bit
                     temp_attack &= temp_attack - 1;
 
-                    if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_2_BITBOARD) != 0) { //if promotion
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_Q_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                    if ((SQUARE_BBS[starting_square] & RANK_2_BITBOARD) != 0) { //if promotion
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_B_Q_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = BP;
                         move_count+=1;
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_R_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_B_R_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = BP;
                         move_count+=1;
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_N_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_B_N_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = BP;
                         move_count+=1;
 
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_B_B_PROMOTION_CAP;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_B_B_PROMOTION_CAP;
+                        move_list[move_count][MOVE_PIECE] = BP;
                         move_count+=1;
                     } else {
-                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                        move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                        move_list[move_count][MOVE_STARTING] = starting_square;
+                        move_list[move_count][MOVE_TARGET] = target_square;
+                        move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                        move_list[move_count][MOVE_PIECE] = BP;
                         move_count+=1;
                     }
                 }
 
-                if ((move_constants.SQUARE_BBS[starting_square] & gen_const.RANK_4_BITBOARD) != 0) { //check rank for ep
-                    if (board.ep_global != gen_const.NO_SQUARE) {
-                        if ((((move_constants.BLACK_PAWN_ATTACKS[starting_square] & move_constants.SQUARE_BBS[board.ep_global]) & check_bitboard) & temp_pin_bitboard) != 0) {
-                            if ((board.bitboard_array_global[gen_const.BK] & gen_const.RANK_4_BITBOARD) == 0) { //if no king on rank 5
-                                move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                move_list[move_count][gen_const.MOVE_TARGET] = board.ep_global;
-                                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_BLACK_EP;
-                                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                if ((SQUARE_BBS[starting_square] & RANK_4_BITBOARD) != 0) { //check rank for ep
+                    if (ep_global != NO_SQUARE) {
+                        if ((((BLACK_PAWN_ATTACKS[starting_square] & SQUARE_BBS[ep_global]) & check_bitboard) & temp_pin_bitboard) != 0) {
+                            if ((bitboard_array_global[BK] & RANK_4_BITBOARD) == 0) { //if no king on rank 5
+                                move_list[move_count][MOVE_STARTING] = starting_square;
+                                move_list[move_count][MOVE_TARGET] = ep_global;
+                                move_list[move_count][MOVE_TAG] = TAG_BLACK_EP;
+                                move_list[move_count][MOVE_PIECE] = BP;
                                 move_count+=1;
-                            } else if ((board.bitboard_array_global[gen_const.WR] & gen_const.RANK_4_BITBOARD) == 0 and (board.bitboard_array_global[gen_const.WQ] & gen_const.RANK_4_BITBOARD) == 0) { // if no b rook or queen on rank 5                                 move_list[move_count][MOVE_STARTING] = starting_square;
-                                move_list[move_count][gen_const.MOVE_TARGET] = board.ep_global;
-                                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_BLACK_EP;
-                                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                            } else if ((bitboard_array_global[WR] & RANK_4_BITBOARD) == 0 and (bitboard_array_global[WQ] & RANK_4_BITBOARD) == 0) { // if no b rook or queen on rank 5                                 move_list[move_count][MOVE_STARTING] = starting_square;
+                                move_list[move_count][MOVE_TARGET] = ep_global;
+                                move_list[move_count][MOVE_TAG] = TAG_BLACK_EP;
+                                move_list[move_count][MOVE_PIECE] = BP;
                                 move_count+=1;
                             } else { //wk and br or bq on rank 5
-                                var occupancyWithoutEPPawns = COMBINED_OCCUPANCIES_LOCAL & ~move_constants.SQUARE_BBS[starting_square];
-                                occupancyWithoutEPPawns &= ~move_constants.SQUARE_BBS[board.ep_global - 8];
+                                var occupancyWithoutEPPawns = COMBINED_OCCUPANCIES_LOCAL & ~SQUARE_BBS[starting_square];
+                                occupancyWithoutEPPawns &= ~SQUARE_BBS[ep_global - 8];
 
-                                const rookAttacksFromKing = gen_moves.getRookAttacksFast(blackKingPosition, occupancyWithoutEPPawns);
+                                const rookAttacksFromKing = getRookAttacksFast(blackKingPosition, occupancyWithoutEPPawns);
 
-                                if ((rookAttacksFromKing & board.bitboard_array_global[gen_const.WR]) == 0) {
-                                    if ((rookAttacksFromKing & board.bitboard_array_global[gen_const.WQ]) == 0) {
-                                        move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                                        move_list[move_count][gen_const.MOVE_TARGET] = board.ep_global;
-                                        move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_BLACK_EP;
-                                        move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BP;
+                                if ((rookAttacksFromKing & bitboard_array_global[WR]) == 0) {
+                                    if ((rookAttacksFromKing & bitboard_array_global[WQ]) == 0) {
+                                        move_list[move_count][MOVE_STARTING] = starting_square;
+                                        move_list[move_count][MOVE_TARGET] = ep_global;
+                                        move_list[move_count][MOVE_TAG] = TAG_BLACK_EP;
+                                        move_list[move_count][MOVE_PIECE] = BP;
                                         move_count+=1;
                                     }
                                 }
@@ -2085,258 +2085,258 @@ fn perftInline(depth:i8, ply:u8) usize {
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.BN];
+            temp_bitboard = bitboard_array_global[BN];
 
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58]; //looks for the startingSquare
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58]; //looks for the startingSquare
                 temp_bitboard &= temp_bitboard - 1; //removes the knight from that square to not infinitely loop
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                temp_attack = ((move_constants.KNIGHT_ATTACKS[starting_square] & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //gets knight captures
+                temp_attack = ((KNIGHT_ATTACKS[starting_square] & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard; //gets knight captures
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BN;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = BN;
                     move_count+=1;
                 }
 
-                temp_attack = ((move_constants.KNIGHT_ATTACKS[starting_square] & (~COMBINED_OCCUPANCIES_LOCAL)) & check_bitboard) & temp_pin_bitboard;
+                temp_attack = ((KNIGHT_ATTACKS[starting_square] & (~COMBINED_OCCUPANCIES_LOCAL)) & check_bitboard) & temp_pin_bitboard;
 
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BN;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = BN;
                     move_count+=1;
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.BB];
+            temp_bitboard = bitboard_array_global[BB];
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                const  bishopAttacks = gen_moves.getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                const  bishopAttacks = getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
 
                 temp_attack = ((bishopAttacks & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BB;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = BB;
                     move_count+=1;
                 }
 
                 temp_attack = ((bishopAttacks & (~COMBINED_OCCUPANCIES_LOCAL)) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BB;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = BB;
                     move_count+=1;
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.BR];
+            temp_bitboard = bitboard_array_global[BR];
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                const rookAttacks = gen_moves.getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                const rookAttacks = getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
 
                 temp_attack = ((rookAttacks & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BR;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = BR;
                     move_count+=1;
                 }
 
                 temp_attack = ((rookAttacks & (~COMBINED_OCCUPANCIES_LOCAL)) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BR;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = BR;
                     move_count+=1;
                 }
             }
 
-            temp_bitboard = board.bitboard_array_global[gen_const.BQ];
+            temp_bitboard = bitboard_array_global[BQ];
             while (temp_bitboard != 0) {
-                starting_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
+                starting_square = DEBRUIJN64[MAGIC *% (temp_bitboard ^ (temp_bitboard - 1)) >> 58];
                 temp_bitboard &= temp_bitboard - 1;
 
-                temp_pin_bitboard = gen_const.MAX_ULONG;
+                temp_pin_bitboard = MAX_ULONG;
                 if (pinNumber != 0) {
                     for (0..pinNumber) |i| {
-                        if (pinArray[i][gen_const.PINNED_SQUARE_INDEX] == starting_square) {
-                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][gen_const.PINNING_PIECE_INDEX]];
+                        if (pinArray[i][PINNED_SQUARE_INDEX] == starting_square) {
+                            temp_pin_bitboard = constants.INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]];
                         }
                     }
                 }
 
-                var queenAttacks:u64 = gen_moves.getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
-                queenAttacks |= gen_moves.getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                var queenAttacks:u64 = getRookAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
+                queenAttacks |= getBishopAttacksFast(starting_square, COMBINED_OCCUPANCIES_LOCAL);
 
                 temp_attack = ((queenAttacks & WHITE_OCCUPANCIES_LOCAL) & check_bitboard) & temp_pin_bitboard;
 
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BQ;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                    move_list[move_count][MOVE_PIECE] = BQ;
                     move_count+=1;
                 }
 
                 temp_attack = ((queenAttacks & (~COMBINED_OCCUPANCIES_LOCAL)) & check_bitboard) & temp_pin_bitboard;
                 while (temp_attack != 0) {
-                    target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                    target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                     temp_attack &= temp_attack - 1;
 
-                    move_list[move_count][gen_const.MOVE_STARTING] = starting_square;
-                    move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BQ;
+                    move_list[move_count][MOVE_STARTING] = starting_square;
+                    move_list[move_count][MOVE_TARGET] = target_square;
+                    move_list[move_count][MOVE_TAG] = TAG_NONE;
+                    move_list[move_count][MOVE_PIECE] = BQ;
                     move_count+=1;
                 }
             }
 
-            temp_attack = move_constants.KING_ATTACKS[blackKingPosition] & WHITE_OCCUPANCIES_LOCAL; //gets knight captures
+            temp_attack = KING_ATTACKS[blackKingPosition] & WHITE_OCCUPANCIES_LOCAL; //gets knight captures
             while (temp_attack != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                 temp_attack &= temp_attack - 1;
 
-                if ((board.bitboard_array_global[gen_const.WP] & move_constants.BLACK_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WP] & BLACK_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const  occupancyWithoutBlackKing = COMBINED_OCCUPANCIES_LOCAL & (~board.bitboard_array_global[gen_const.BK]);
-                const  bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WB] & bishopAttacks) != 0) {
+                const  occupancyWithoutBlackKing = COMBINED_OCCUPANCIES_LOCAL & (~bitboard_array_global[BK]);
+                const  bishopAttacks = getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const  rookAttacks = gen_moves.getRookAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WR] & rookAttacks) != 0) {
+                const  rookAttacks = getRookAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = blackKingPosition;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_CAPTURE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BK;
+                move_list[move_count][MOVE_STARTING] = blackKingPosition;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_CAPTURE;
+                move_list[move_count][MOVE_PIECE] = BK;
                 move_count+=1;
             }
 
-            temp_attack = move_constants.KING_ATTACKS[blackKingPosition] & (~COMBINED_OCCUPANCIES_LOCAL); //get knight moves to emtpy squares
+            temp_attack = KING_ATTACKS[blackKingPosition] & (~COMBINED_OCCUPANCIES_LOCAL); //get knight moves to emtpy squares
 
             while (temp_attack != 0) {
-                target_square = gen_const.DEBRUIJN64[gen_const.MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
+                target_square = DEBRUIJN64[MAGIC *% (temp_attack ^ (temp_attack - 1)) >> 58];
                 temp_attack &= temp_attack - 1;
 
-                if ((board.bitboard_array_global[gen_const.WP] & move_constants.BLACK_PAWN_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WP] & BLACK_PAWN_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WN] & move_constants.KNIGHT_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WN] & KNIGHT_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WK] & move_constants.KING_ATTACKS[target_square]) != 0) {
+                if ((bitboard_array_global[WK] & KING_ATTACKS[target_square]) != 0) {
                     continue;
                 }
-                const  occupancyWithoutBlackKing = COMBINED_OCCUPANCIES_LOCAL & (~board.bitboard_array_global[gen_const.BK]);
-                const  bishopAttacks = gen_moves.getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WB] & bishopAttacks) != 0) {
+                const  occupancyWithoutBlackKing = COMBINED_OCCUPANCIES_LOCAL & (~bitboard_array_global[BK]);
+                const  bishopAttacks = getBishopAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WB] & bishopAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & bishopAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & bishopAttacks) != 0) {
                     continue;
                 }
-                const  rookAttacks = gen_moves.getRookAttacksFast(target_square, occupancyWithoutBlackKing);
-                if ((board.bitboard_array_global[gen_const.WR] & rookAttacks) != 0) {
+                const  rookAttacks = getRookAttacksFast(target_square, occupancyWithoutBlackKing);
+                if ((bitboard_array_global[WR] & rookAttacks) != 0) {
                     continue;
                 }
-                if ((board.bitboard_array_global[gen_const.WQ] & rookAttacks) != 0) {
+                if ((bitboard_array_global[WQ] & rookAttacks) != 0) {
                     continue;
                 }
 
-                move_list[move_count][gen_const.MOVE_STARTING] = blackKingPosition;
-                move_list[move_count][gen_const.MOVE_TARGET] = target_square;
-                move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_NONE;
-                move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BK;
+                move_list[move_count][MOVE_STARTING] = blackKingPosition;
+                move_list[move_count][MOVE_TARGET] = target_square;
+                move_list[move_count][MOVE_TAG] = TAG_NONE;
+                move_list[move_count][MOVE_PIECE] = BK;
                 move_count+=1;
             }
         }
         if (blackKingCheckCount == 0) {
-            if (board.castle_rights_global[gen_const.BKS_CASTLE_RIGHTS] == true) {
-                if (blackKingPosition == gen_const.E8) {
-                    if ((gen_const.BKS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) {
-                        if ((board.bitboard_array_global[gen_const.BR] & move_constants.SQUARE_BBS[gen_const.H8]) != 0) {
-                            if (board.isSquareAttackedByWhiteGlobal(gen_const.F8, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                if (board.isSquareAttackedByWhiteGlobal(gen_const.G8, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                    move_list[move_count][gen_const.MOVE_STARTING] = gen_const.E8;
-                                    move_list[move_count][gen_const.MOVE_TARGET] = gen_const.G8;
-                                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_BCASTLEKS;
-                                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BK;
+            if (castle_rights_global[BKS_CASTLE_RIGHTS] == true) {
+                if (blackKingPosition == E8) {
+                    if ((BKS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) {
+                        if ((bitboard_array_global[BR] & SQUARE_BBS[H8]) != 0) {
+                            if (Is_Square_Attacked_By_White_Global(F8, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                if (Is_Square_Attacked_By_White_Global(G8, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                    move_list[move_count][MOVE_STARTING] = E8;
+                                    move_list[move_count][MOVE_TARGET] = G8;
+                                    move_list[move_count][MOVE_TAG] = TAG_BCASTLEKS;
+                                    move_list[move_count][MOVE_PIECE] = BK;
                                     move_count+=1;
                                 }
                             }
@@ -2344,16 +2344,16 @@ fn perftInline(depth:i8, ply:u8) usize {
                     }
                 }
             }
-            if (board.castle_rights_global[gen_const.BQS_CASTLE_RIGHTS] == true) {
-                if (blackKingPosition == gen_const.E8) {
-                    if ((gen_const.BQS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) {
-                        if ((board.bitboard_array_global[gen_const.BR] & move_constants.SQUARE_BBS[gen_const.A8]) != 0) {
-                            if (board.isSquareAttackedByWhiteGlobal(gen_const.C8, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                if (board.isSquareAttackedByWhiteGlobal(gen_const.D8, COMBINED_OCCUPANCIES_LOCAL) == false) {
-                                    move_list[move_count][gen_const.MOVE_STARTING] = gen_const.E8;
-                                    move_list[move_count][gen_const.MOVE_TARGET] = gen_const.C8;
-                                    move_list[move_count][gen_const.MOVE_TAG] = gen_const.TAG_BCASTLEQS;
-                                    move_list[move_count][gen_const.MOVE_PIECE] = gen_const.BK;
+            if (castle_rights_global[BQS_CASTLE_RIGHTS] == true) {
+                if (blackKingPosition == E8) {
+                    if ((BQS_EMPTY_BITBOARD & COMBINED_OCCUPANCIES_LOCAL) == 0) {
+                        if ((bitboard_array_global[BR] & SQUARE_BBS[A8]) != 0) {
+                            if (Is_Square_Attacked_By_White_Global(C8, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                if (Is_Square_Attacked_By_White_Global(D8, COMBINED_OCCUPANCIES_LOCAL) == false) {
+                                    move_list[move_count][MOVE_STARTING] = E8;
+                                    move_list[move_count][MOVE_TARGET] = C8;
+                                    move_list[move_count][MOVE_TAG] = TAG_BCASTLEQS;
+                                    move_list[move_count][MOVE_PIECE] = BK;
                                     move_count+=1;
                                 }
                             }
@@ -2370,301 +2370,301 @@ fn perftInline(depth:i8, ply:u8) usize {
 
     var nodes:usize = 0;
     var priorNodes:usize = undefined;
-    const copyEp = board.ep_global;
+    const copyEp = ep_global;
     const copy_castle :[4]bool = [4]bool {
-        board.castle_rights_global[0],
-        board.castle_rights_global[1],
-        board.castle_rights_global[2],
-        board.castle_rights_global[3],
+        castle_rights_global[0],
+        castle_rights_global[1],
+        castle_rights_global[2],
+        castle_rights_global[3],
     };
 
     for (0..move_count) |move_index| {
 
-        const  startingSquare = move_list[move_index][gen_const.MOVE_STARTING];
-        const  targetSquare = move_list[move_index][gen_const.MOVE_TARGET];
-        const  piece = move_list[move_index][gen_const.MOVE_PIECE];
-        const  tag = move_list[move_index][gen_const.MOVE_TAG];
+        const  startingSquare = move_list[move_index][MOVE_STARTING];
+        const  targetSquare = move_list[move_index][MOVE_TARGET];
+        const  piece = move_list[move_index][MOVE_PIECE];
+        const  tag = move_list[move_index][MOVE_TAG];
 
-        var captureIndex:usize = gen_const.NO_SQUARE;
+        var captureIndex:usize = NO_SQUARE;
 
-        if (board.is_white_global == true) {
-            board.is_white_global = false;
+        if (is_white_global == true) {
+            is_white_global = false;
         } else {
-            board.is_white_global = true;
+            is_white_global = true;
         }
 
         switch (tag) {
          0, 26 => { //none
-            board.bitboard_array_global[piece] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[piece] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          1, 27 => { //check cap
-            board.bitboard_array_global[piece] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            if (piece >= gen_const.WP and piece <= gen_const.WK) {
+            bitboard_array_global[piece] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            if (piece >= WP and piece <= WK) {
                 for (6..12) |i| {
-                    if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+                    if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                         captureIndex = i;
                         break;
                     }
                 }
-                board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+                bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
 
             } else { //is black
-                for (gen_const.WP..gen_const.BP) |i| {
-                    if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+                for (WP..BP) |i| {
+                    if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                         captureIndex = i;
                         break;
                     }
                 }
-                board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+                bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             }
 
-            board.ep_global = gen_const.NO_SQUARE;
+            ep_global = NO_SQUARE;
             },
          2 => { //white ep
             //move piece
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[gen_const.WP] &= ~move_constants.SQUARE_BBS[startingSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] &= ~SQUARE_BBS[startingSquare];
             //remove 
-            board.bitboard_array_global[gen_const.BP] &= ~move_constants.SQUARE_BBS[targetSquare + 8];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[BP] &= ~SQUARE_BBS[targetSquare + 8];
+            ep_global = NO_SQUARE;
             },
          3 => { //black ep
             //move piece
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[gen_const.BP] &= ~move_constants.SQUARE_BBS[startingSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] &= ~SQUARE_BBS[startingSquare];
             //remove white pawn square up
-            board.bitboard_array_global[gen_const.WP] &= ~move_constants.SQUARE_BBS[targetSquare - 8];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WP] &= ~SQUARE_BBS[targetSquare - 8];
+            ep_global = NO_SQUARE;
             },
 
          4 => { //WKS
             //white king
-            board.bitboard_array_global[gen_const.WK] |= move_constants.SQUARE_BBS[gen_const.G1];
-            board.bitboard_array_global[gen_const.WK] &= ~move_constants.SQUARE_BBS[gen_const.E1];
+            bitboard_array_global[WK] |= SQUARE_BBS[G1];
+            bitboard_array_global[WK] &= ~SQUARE_BBS[E1];
             //white rook
-            board.bitboard_array_global[gen_const.WR] |= move_constants.SQUARE_BBS[gen_const.F1];
-            board.bitboard_array_global[gen_const.WR] &= ~move_constants.SQUARE_BBS[gen_const.H1];
-            board.castle_rights_global[gen_const.WKS_CASTLE_RIGHTS] = false;
-            board.castle_rights_global[gen_const.WQS_CASTLE_RIGHTS] = false;
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WR] |= SQUARE_BBS[F1];
+            bitboard_array_global[WR] &= ~SQUARE_BBS[H1];
+            castle_rights_global[WKS_CASTLE_RIGHTS] = false;
+            castle_rights_global[WQS_CASTLE_RIGHTS] = false;
+            ep_global = NO_SQUARE;
             },
          5 => { //WQS
             //white king
-            board.bitboard_array_global[gen_const.WK] |= move_constants.SQUARE_BBS[gen_const.C1];
-            board.bitboard_array_global[gen_const.WK] &= ~move_constants.SQUARE_BBS[gen_const.E1];
+            bitboard_array_global[WK] |= SQUARE_BBS[C1];
+            bitboard_array_global[WK] &= ~SQUARE_BBS[E1];
             //white rook
-            board.bitboard_array_global[gen_const.WR] |= move_constants.SQUARE_BBS[gen_const.D1];
-            board.bitboard_array_global[gen_const.WR] &= ~move_constants.SQUARE_BBS[gen_const.A1];
-            board.castle_rights_global[gen_const.WKS_CASTLE_RIGHTS] = false;
-            board.castle_rights_global[gen_const.WQS_CASTLE_RIGHTS] = false;
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WR] |= SQUARE_BBS[D1];
+            bitboard_array_global[WR] &= ~SQUARE_BBS[A1];
+            castle_rights_global[WKS_CASTLE_RIGHTS] = false;
+            castle_rights_global[WQS_CASTLE_RIGHTS] = false;
+            ep_global = NO_SQUARE;
             },
          6 => { //BKS
             //white king
-            board.bitboard_array_global[gen_const.BK] |= move_constants.SQUARE_BBS[gen_const.G8];
-            board.bitboard_array_global[gen_const.BK] &= ~move_constants.SQUARE_BBS[gen_const.E8];
+            bitboard_array_global[BK] |= SQUARE_BBS[G8];
+            bitboard_array_global[BK] &= ~SQUARE_BBS[E8];
             //white rook
-            board.bitboard_array_global[gen_const.BR] |= move_constants.SQUARE_BBS[gen_const.F8];
-            board.bitboard_array_global[gen_const.BR] &= ~move_constants.SQUARE_BBS[gen_const.H8];
+            bitboard_array_global[BR] |= SQUARE_BBS[F8];
+            bitboard_array_global[BR] &= ~SQUARE_BBS[H8];
 
-            board.castle_rights_global[gen_const.BKS_CASTLE_RIGHTS] = false;
-            board.castle_rights_global[gen_const.BQS_CASTLE_RIGHTS] = false;
-            board.ep_global = gen_const.NO_SQUARE;
+            castle_rights_global[BKS_CASTLE_RIGHTS] = false;
+            castle_rights_global[BQS_CASTLE_RIGHTS] = false;
+            ep_global = NO_SQUARE;
             },
          7 => { //BQS
             //white king
-            board.bitboard_array_global[gen_const.BK] |= move_constants.SQUARE_BBS[gen_const.C8];
-            board.bitboard_array_global[gen_const.BK] &= ~move_constants.SQUARE_BBS[gen_const.E8];
+            bitboard_array_global[BK] |= SQUARE_BBS[C8];
+            bitboard_array_global[BK] &= ~SQUARE_BBS[E8];
             //white rook
-            board.bitboard_array_global[gen_const.BR] |= move_constants.SQUARE_BBS[gen_const.D8];
-            board.bitboard_array_global[gen_const.BR] &= ~move_constants.SQUARE_BBS[gen_const.A8];
-            board.castle_rights_global[gen_const.BKS_CASTLE_RIGHTS] = false;
-            board.castle_rights_global[gen_const.BQS_CASTLE_RIGHTS] = false;
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[BR] |= SQUARE_BBS[D8];
+            bitboard_array_global[BR] &= ~SQUARE_BBS[A8];
+            castle_rights_global[BKS_CASTLE_RIGHTS] = false;
+            castle_rights_global[BQS_CASTLE_RIGHTS] = false;
+            ep_global = NO_SQUARE;
             },
 
          8 => { //BNPr
-            board.bitboard_array_global[gen_const.BN] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[BN] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          9 => { //BBPr
-            board.bitboard_array_global[gen_const.BB] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[BB] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          10  => { //BQPr
-            board.bitboard_array_global[gen_const.BQ] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[BQ] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          11  => { //BRPr
-            board.bitboard_array_global[gen_const.BR] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[BR] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          12  => { //WNPr
-            board.bitboard_array_global[gen_const.WN] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WN] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          13 => { //WBPr
-            board.bitboard_array_global[gen_const.WB] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WB] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          14 => { //WQPr
-            board.bitboard_array_global[gen_const.WQ] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WQ] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          15 => { //WRPr
-            board.bitboard_array_global[gen_const.WR] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
+            bitboard_array_global[WR] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
             },
          16 => { //BNPrCAP
-            board.bitboard_array_global[gen_const.BN] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.WHITE_START_INDEX..gen_const.BP) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            bitboard_array_global[BN] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (WHITE_START_INDEX..BP) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          17 => { //BBPrCAP
-            board.bitboard_array_global[gen_const.BB] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.WHITE_START_INDEX..gen_const.BP) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            bitboard_array_global[BB] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (WHITE_START_INDEX..BP) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          18 => { //BQPrCAP
-            board.bitboard_array_global[gen_const.BQ] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.WHITE_START_INDEX..gen_const.BP) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            bitboard_array_global[BQ] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (WHITE_START_INDEX..BP) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          19 => { //BRPrCAP
-            board.bitboard_array_global[gen_const.BR] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.WHITE_START_INDEX..gen_const.BP) |i| {
+            bitboard_array_global[BR] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (WHITE_START_INDEX..BP) |i| {
 
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          20 => { //WNPrCAP
-            board.bitboard_array_global[gen_const.WN] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.BP..12) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            bitboard_array_global[WN] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (BP..12) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          21 => { //WBPrCAP
-            board.bitboard_array_global[gen_const.WB] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.BP..12) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            bitboard_array_global[WB] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (BP..12) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          22 => { //WQPrCAP
-            board.bitboard_array_global[gen_const.WQ] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.BLACK_START_INDEX..12) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            bitboard_array_global[WQ] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
+            ep_global = NO_SQUARE;
+            for (BLACK_START_INDEX..12) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          23 => { //WRPrCAP
-            board.bitboard_array_global[gen_const.WR] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[startingSquare];
+            bitboard_array_global[WR] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[startingSquare];
 
-            board.ep_global = gen_const.NO_SQUARE;
-            for (gen_const.BP..12) |i| {
-                if ((board.bitboard_array_global[i] & move_constants.SQUARE_BBS[targetSquare]) != 0) {
+            ep_global = NO_SQUARE;
+            for (BP..12) |i| {
+                if ((bitboard_array_global[i] & SQUARE_BBS[targetSquare]) != 0) {
                     captureIndex = i;
                     break;
                 }
             }
-            board.bitboard_array_global[captureIndex] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] &= ~SQUARE_BBS[targetSquare];
             },
          24 => { //WDouble
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[gen_const.WP] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = targetSquare + 8;
+            bitboard_array_global[WP] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] &= ~SQUARE_BBS[startingSquare];
+            ep_global = targetSquare + 8;
             },
          25 => { //BDouble
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[gen_const.BP] &= ~move_constants.SQUARE_BBS[startingSquare];
-            board.ep_global = targetSquare - 8;
+            bitboard_array_global[BP] |= SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] &= ~SQUARE_BBS[startingSquare];
+            ep_global = targetSquare - 8;
             },
         else => {
             unreachable;
         }
         }
 
-        if (piece == gen_const.WK) {
-            board.castle_rights_global[gen_const.WKS_CASTLE_RIGHTS] = false;
-            board.castle_rights_global[gen_const.WQS_CASTLE_RIGHTS] = false;
-        } else if (piece == gen_const.BK) {
-            board.castle_rights_global[gen_const.BKS_CASTLE_RIGHTS] = false;
-            board.castle_rights_global[gen_const.BQS_CASTLE_RIGHTS] = false;
-        } else if (piece == gen_const.WR) {
-            if (board.castle_rights_global[gen_const.WKS_CASTLE_RIGHTS] == true) {
-                if ((board.bitboard_array_global[gen_const.WR] & move_constants.SQUARE_BBS[gen_const.H1]) == 0) {
-                    board.castle_rights_global[gen_const.WKS_CASTLE_RIGHTS] = false;
+        if (piece == WK) {
+            castle_rights_global[WKS_CASTLE_RIGHTS] = false;
+            castle_rights_global[WQS_CASTLE_RIGHTS] = false;
+        } else if (piece == BK) {
+            castle_rights_global[BKS_CASTLE_RIGHTS] = false;
+            castle_rights_global[BQS_CASTLE_RIGHTS] = false;
+        } else if (piece == WR) {
+            if (castle_rights_global[WKS_CASTLE_RIGHTS] == true) {
+                if ((bitboard_array_global[WR] & SQUARE_BBS[H1]) == 0) {
+                    castle_rights_global[WKS_CASTLE_RIGHTS] = false;
                 }
             }
-            if (board.castle_rights_global[gen_const.WQS_CASTLE_RIGHTS] == true) {
-                if ((board.bitboard_array_global[gen_const.WR] & move_constants.SQUARE_BBS[gen_const.A1]) == 0){
-                    board.castle_rights_global[gen_const.WQS_CASTLE_RIGHTS] = false;
+            if (castle_rights_global[WQS_CASTLE_RIGHTS] == true) {
+                if ((bitboard_array_global[WR] & SQUARE_BBS[A1]) == 0){
+                    castle_rights_global[WQS_CASTLE_RIGHTS] = false;
                 }
             }
-        } else if (piece == gen_const.BR) {
-            if (board.castle_rights_global[gen_const.BKS_CASTLE_RIGHTS] == true) {
-                if ((board.bitboard_array_global[gen_const.BR] & move_constants.SQUARE_BBS[gen_const.H8]) == 0) {
-                    board.castle_rights_global[gen_const.BKS_CASTLE_RIGHTS] = false;
+        } else if (piece == BR) {
+            if (castle_rights_global[BKS_CASTLE_RIGHTS] == true) {
+                if ((bitboard_array_global[BR] & SQUARE_BBS[H8]) == 0) {
+                    castle_rights_global[BKS_CASTLE_RIGHTS] = false;
                 }
             }
-            if (board.castle_rights_global[gen_const.BQS_CASTLE_RIGHTS] == true) {
-                if ((board.bitboard_array_global[gen_const.BR] & move_constants.SQUARE_BBS[gen_const.A8]) == 0) {
-                    board.castle_rights_global[gen_const.BQS_CASTLE_RIGHTS] = false;
+            if (castle_rights_global[BQS_CASTLE_RIGHTS] == true) {
+                if ((bitboard_array_global[BR] & SQUARE_BBS[A8]) == 0) {
+                    castle_rights_global[BQS_CASTLE_RIGHTS] = false;
                 }
             }
         }
@@ -2672,167 +2672,167 @@ fn perftInline(depth:i8, ply:u8) usize {
         priorNodes = nodes;
         nodes += perftInline(depth - 1, ply + 1);
 
-        board.is_white_global = !board.is_white_global;
+        is_white_global = !is_white_global;
 
         switch (tag) {
          0, 26 => { //check
-            board.bitboard_array_global[piece] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[targetSquare];
          },
         
          1, 27 => { //check cap
-            board.bitboard_array_global[piece] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[piece] &= ~move_constants.SQUARE_BBS[targetSquare];
-            if (piece >= gen_const.WP and piece <= gen_const.WK) {
-                board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[piece] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[piece] &= ~SQUARE_BBS[targetSquare];
+            if (piece >= WP and piece <= WK) {
+                bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
             } else { //is black
-                board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+                bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
             }
 
          },
          2 => { //white ep
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WP] &= ~move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[targetSquare + 8];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WP] &= ~SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[targetSquare + 8];
          },
          3 => { //black ep
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BP] &= ~move_constants.SQUARE_BBS[targetSquare];
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[targetSquare - 8];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BP] &= ~SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[targetSquare - 8];
          },
          4 => { //WKS
             //white king
-            board.bitboard_array_global[gen_const.WK] |= move_constants.SQUARE_BBS[gen_const.E1];
-            board.bitboard_array_global[gen_const.WK] &= ~move_constants.SQUARE_BBS[gen_const.G1];
+            bitboard_array_global[WK] |= SQUARE_BBS[E1];
+            bitboard_array_global[WK] &= ~SQUARE_BBS[G1];
             //white rook
-            board.bitboard_array_global[gen_const.WR] |= move_constants.SQUARE_BBS[gen_const.H1];
-            board.bitboard_array_global[gen_const.WR] &= ~move_constants.SQUARE_BBS[gen_const.F1];
+            bitboard_array_global[WR] |= SQUARE_BBS[H1];
+            bitboard_array_global[WR] &= ~SQUARE_BBS[F1];
          },
          5 => { //WQS
             //white king
-            board.bitboard_array_global[gen_const.WK] |= move_constants.SQUARE_BBS[gen_const.E1];
-            board.bitboard_array_global[gen_const.WK] &= ~move_constants.SQUARE_BBS[gen_const.C1];
+            bitboard_array_global[WK] |= SQUARE_BBS[E1];
+            bitboard_array_global[WK] &= ~SQUARE_BBS[C1];
             //white rook
-            board.bitboard_array_global[gen_const.WR] |= move_constants.SQUARE_BBS[gen_const.A1];
-            board.bitboard_array_global[gen_const.WR] &= ~move_constants.SQUARE_BBS[gen_const.D1];
+            bitboard_array_global[WR] |= SQUARE_BBS[A1];
+            bitboard_array_global[WR] &= ~SQUARE_BBS[D1];
          },
          6 => { //BKS
             //white king
-            board.bitboard_array_global[gen_const.BK] |= move_constants.SQUARE_BBS[gen_const.E8];
-            board.bitboard_array_global[gen_const.BK] &= ~move_constants.SQUARE_BBS[gen_const.G8];
+            bitboard_array_global[BK] |= SQUARE_BBS[E8];
+            bitboard_array_global[BK] &= ~SQUARE_BBS[G8];
             //white rook
-            board.bitboard_array_global[gen_const.BR] |= move_constants.SQUARE_BBS[gen_const.H8];
-            board.bitboard_array_global[gen_const.BR] &= ~move_constants.SQUARE_BBS[gen_const.F8];
+            bitboard_array_global[BR] |= SQUARE_BBS[H8];
+            bitboard_array_global[BR] &= ~SQUARE_BBS[F8];
          },
          7 => { //BQS
             //white king
-            board.bitboard_array_global[gen_const.BK] |= move_constants.SQUARE_BBS[gen_const.E8];
-            board.bitboard_array_global[gen_const.BK] &= ~move_constants.SQUARE_BBS[gen_const.C8];
+            bitboard_array_global[BK] |= SQUARE_BBS[E8];
+            bitboard_array_global[BK] &= ~SQUARE_BBS[C8];
             //white rook
-            board.bitboard_array_global[gen_const.BR] |= move_constants.SQUARE_BBS[gen_const.A8];
-            board.bitboard_array_global[gen_const.BR] &= ~move_constants.SQUARE_BBS[gen_const.D8];
+            bitboard_array_global[BR] |= SQUARE_BBS[A8];
+            bitboard_array_global[BR] &= ~SQUARE_BBS[D8];
 
          },
          8 => { //BNPr
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BN] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BN] &= ~SQUARE_BBS[targetSquare];
          },
          9 => { //BBPr
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BB] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BB] &= ~SQUARE_BBS[targetSquare];
          },
          10 => { //BQPr
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BQ] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BQ] &= ~SQUARE_BBS[targetSquare];
          },
          11 => { //BRPr
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BR] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BR] &= ~SQUARE_BBS[targetSquare];
          },
          12 => { //WNPr
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WN] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WN] &= ~SQUARE_BBS[targetSquare];
          },
          13 => { //WBPr
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WB] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WB] &= ~SQUARE_BBS[targetSquare];
          },
          14 => { //WQPr
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WQ] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WQ] &= ~SQUARE_BBS[targetSquare];
          },
          15 => { //WRPr
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WR] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WR] &= ~SQUARE_BBS[targetSquare];
          },
          16 => { //BNPrCAP
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BN] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BN] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          17 => { //BBPrCAP
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BB] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BB] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          18 => { //BQPrCAP
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BQ] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BQ] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          19 => { //BRPrCAP
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BR] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BR] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          20 => { //WNPrCAP
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WN] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WN] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          21 => { //WBPrCAP
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WB] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WB] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          22 => { //WQPrCAP
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WQ] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WQ] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          23 => { //WRPrCAP
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WR] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WR] &= ~SQUARE_BBS[targetSquare];
 
-            board.bitboard_array_global[captureIndex] |= move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[captureIndex] |= SQUARE_BBS[targetSquare];
          },
          24 => { //WDouble
-            board.bitboard_array_global[gen_const.WP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.WP] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[WP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[WP] &= ~SQUARE_BBS[targetSquare];
          },
          25 => { //BDouble
-            board.bitboard_array_global[gen_const.BP] |= move_constants.SQUARE_BBS[startingSquare];
-            board.bitboard_array_global[gen_const.BP] &= ~move_constants.SQUARE_BBS[targetSquare];
+            bitboard_array_global[BP] |= SQUARE_BBS[startingSquare];
+            bitboard_array_global[BP] &= ~SQUARE_BBS[targetSquare];
          },
          else => {
             unreachable;
          }
         }
 
-        board.castle_rights_global[0] = copy_castle[0];
-        board.castle_rights_global[1] = copy_castle[1];
-        board.castle_rights_global[2] = copy_castle[2];
-        board.castle_rights_global[3] = copy_castle[3];
-        board.ep_global = copyEp;
+        castle_rights_global[0] = copy_castle[0];
+        castle_rights_global[1] = copy_castle[1];
+        castle_rights_global[2] = copy_castle[2];
+        castle_rights_global[3] = copy_castle[3];
+        ep_global = copyEp;
 
-        //if (epGlobal != general_constants.NO_SQUARE)
+        //if (epGlobal != general_NO_SQUARE)
         //{
         //    std::cout << "   ep: " << SQ_CHAR_X[epGlobal] << SQ_CHAR_Y[epGlobal] << '\n';
         //}
@@ -2863,5 +2863,5 @@ pub fn runPerftInline(depth:i8) void {
 pub fn main() void {
 
     ParseFenGlobal(FEN_STARTING_POSITION, 0);
-    RunPerftInline(6);
+    runPerftInline(6);
 }
