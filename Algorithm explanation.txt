@@ -547,7 +547,7 @@ This can be a problem if "square" is not valid though. I do it this way:
 When you minus 1 bitboard, it removes the smallest bit and sets all bits below it.
 We then just AND this with the bitboard to remove the smallest bit.
 
-    1  1  1  1  1  1  1  1    
+    _  _  _  _  _  _  _  _    
     _  1  1  1  1  1  1  1
     _  _  _  _  _  _  _  _
     _  _  _  _  _  _  _  _
@@ -555,7 +555,7 @@ We then just AND this with the bitboard to remove the smallest bit.
     _  _  _  _  _  _  _  _
     _  _  _  _  _  _  _  _
     _  _  _  _  _  _  _  _
-              &
+               &
     1  1  1  1  1  1  1  1    
     _  1  1  1  1  1  1  1
     _  _  _  _  _  _  _  _
@@ -573,7 +573,8 @@ We then just AND this with the bitboard to remove the smallest bit.
     _  _  _  _  _  _  _  _
     _  _  _  _  _  _  _  _
     _  _  _  _  _  _  _  _
-  
+
+We removed the first piece.
 
 
 
