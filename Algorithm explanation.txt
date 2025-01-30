@@ -85,7 +85,7 @@ We need to remove the bit we want and place it somewhere else. Let's e7 to e5:
   _  _  _  _  _  _  _  _
   _  _  _  _  _  _  _  _
 
-This puts a bit on d5. Now we remove e7 like so:
+This puts a bit on e5. Now we remove e7 like so:
 
   black_pawns &= ~SQUARE_BBS[E7]; //remove the bit
   _  _  _  _  _  _  _  _
