@@ -73,9 +73,9 @@ Let's say we want to move a pawn:
   _  _  _  _  _  _  _  _
   _  _  _  _  _  _  _  _
 
-We need to remove the bit we want and place it somewhere else. Let's d7 to d5:
+We need to remove the bit we want and place it somewhere else. Let's e7 to e5:
 
-  black_pawns |= SQUARE_BBS[D5]; //add the bit
+  black_pawns |= SQUARE_BBS[E5]; //add the bit
   _  _  _  _  _  _  _  _
   1  1  1  1  1  1  1  1
   _  _  _  _  _  _  _  _
@@ -85,9 +85,9 @@ We need to remove the bit we want and place it somewhere else. Let's d7 to d5:
   _  _  _  _  _  _  _  _
   _  _  _  _  _  _  _  _
 
-This puts a bit on d5. Now we remove d7 like so:
+This puts a bit on d5. Now we remove e7 like so:
 
-  black_pawns &= ~SQUARE_BBS[D7]; //remove the bit
+  black_pawns &= ~SQUARE_BBS[E7]; //remove the bit
   _  _  _  _  _  _  _  _
   1  1  1  1  _  1  1  1
   _  _  _  _  _  _  _  _
