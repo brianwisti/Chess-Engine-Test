@@ -1,5 +1,6 @@
 """Implements the bitboard algorithm for determining chess moves."""
 
+import copy
 import time
 
 # Program Constants {{{
@@ -4695,8 +4696,8 @@ BLACK_PAWN_ATTACKS = [
 
 MAX_ULONG = 18446744073709551615
 
-PieceNames: str = ["P", "N", "B", "R", "Q", "K", "P", "N", "B", "R", "Q", "K", "_"]
-PieceColours: str = ["W", "W", "W", "W", "W", "W", "B", "B", "B", "B", "B", "B", "_"]
+PieceNames = ["P", "N", "B", "R", "Q", "K", "P", "N", "B", "R", "Q", "K", "_"]
+PieceColours = ["W", "W", "W", "W", "W", "W", "B", "B", "B", "B", "B", "B", "_"]
 
 NO_SQUARE: int = 65
 BP_STARTING_POSITIONS = 65280
@@ -5258,8 +5259,8 @@ EMPTY_BITBOARD = 0
 # }}}  noqa: ERA001
 
 PIECE_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-WHITE_TO_PLAY: bool = True
-CASTLE_RIGHTS: bool = [True, True, True, True]
+WHITE_TO_PLAY = True
+CASTLE_RIGHTS = [True, True, True, True]
 ep: int = NO_SQUARE
 BOARD_PLY: int = 0
 
@@ -5399,57 +5400,6 @@ SQ_CHAR_X = [
     "N",
 ]
 
-
-def print_move_no_nl(starting: int, target_square: int, tag: int):  # { #starting
-    """Print a single move inline."""
-    if starting < 0 or starting > LAST_BOARD_SLOT:
-        print(f"{starting}", end="")
-
-    else:
-        print(f"{SQ_CHAR_X[starting]}", end="")
-        print(f"{SQ_CHAR_Y[starting]}", end="")
-
-    # target
-    if target_square < 0 or target_square > LAST_BOARD_SLOT:
-        print("%d", target_square)
-
-    else:
-        print(f"{SQ_CHAR_X[target_square]}", end="")
-        print(f"{SQ_CHAR_Y[target_square]}", end="")
-
-    if tag in (
-        TAG_BCaptureKnightPromotion,
-        TAG_BKnightPromotion,
-        TAG_WKnightPromotion,
-        TAG_WCaptureKnightPromotion,
-    ):
-        print("n", end="")
-
-    elif tag in (
-        TAG_BCaptureRookPromotion,
-        TAG_BRookPromotion,
-        TAG_WRookPromotion,
-        TAG_WCaptureRookPromotion,
-    ):
-        print("r", end="")
-
-    elif tag in (
-        TAG_BCaptureBishopPromotion,
-        TAG_BBishopPromotion,
-        TAG_WBishopPromotion,
-        TAG_WCaptureBishopPromotion,
-    ):
-        print("b", end="")
-
-    elif tag in (
-        TAG_BCaptureQueenPromotion,
-        TAG_BQueenPromotion,
-        TAG_WQueenPromotion,
-        TAG_WCaptureQueenPromotion,
-    ):
-        print("q", end="")
-
-
 BISHOP_UP_LEFT = 0
 BISHOP_UP_RIGHT = 1
 BISHOP_DOWN_LEFT = 2
@@ -5459,183 +5409,9 @@ ROOK_DOWN = 2
 ROOK_LEFT = 3
 ROOK_RIGHT = 1
 
-
-def get_rook_moves_separate(square: int, combined_occ: int) -> int:
-    """Return rook's current available moves."""
-    combined_attacks = 0
-    rook_attack_up: int = ROOK_ATTACKS[ROOK_UP][square]
-    rook_and_occs = rook_attack_up & combined_occ
-
-    if rook_and_occs != 0:
-        last_value = rook_and_occs
-
-        for _ in range(8):
-            rook_and_occs = rook_and_occs & rook_and_occs - 1
-
-            if rook_and_occs == 0:
-                end_square: int = bitscan_forward(last_value)
-                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-                break
-
-            last_value = rook_and_occs
-
-    else:
-        combined_attacks |= rook_attack_up
-
-    rook_attack_left = ROOK_ATTACKS[ROOK_LEFT][square]
-    rook_and_occs = rook_attack_left & combined_occ
-
-    if rook_and_occs != 0:
-        last_value = rook_and_occs
-
-        for _ in range(8):
-            rook_and_occs = rook_and_occs & rook_and_occs - 1
-
-            if rook_and_occs == 0:
-                end_square: int = bitscan_forward(last_value)
-                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-                break
-
-            last_value = rook_and_occs
-    else:
-        combined_attacks |= rook_attack_left
-
-    rook_attack_down = ROOK_ATTACKS[ROOK_DOWN][square]
-    rook_and_occs = rook_attack_down & combined_occ
-
-    if rook_and_occs != 0:
-        end_square = bitscan_forward(rook_and_occs)
-        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-
-    else:  # {
-        combined_attacks |= rook_attack_down
-
-    rook_attack_right = ROOK_ATTACKS[ROOK_RIGHT][square]
-    rook_and_occs = rook_attack_right & combined_occ
-    if rook_and_occs != 0:
-        end_square = bitscan_forward(rook_and_occs)
-        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-
-    else:
-        combined_attacks |= rook_attack_right
-
-    return combined_attacks
-
-
-def g(square: int, combined_occ: int):
-    """Return available moves for the bishop."""
-    combined_attacks = 0
-    bishop_attack_up_left = BISHOP_ATTACKS[BISHOP_UP_LEFT][square]
-    bishop_and_occs = bishop_attack_up_left & combined_occ
-
-    if bishop_and_occs != 0:
-        last_value = bishop_and_occs
-
-        for _ in range(8):
-            bishop_and_occs &= bishop_and_occs - 1
-            if bishop_and_occs == 0:
-                end_square = bitscan_forward(last_value)
-                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-                break
-
-            last_value = bishop_and_occs
-    else:
-        combined_attacks |= bishop_attack_up_left
-
-    bishop_attack_up_right = BISHOP_ATTACKS[BISHOP_UP_RIGHT][square]
-    bishop_and_occs = bishop_attack_up_right & combined_occ
-
-    if bishop_and_occs != 0:
-        last_value = bishop_and_occs
-
-        for _ in range(8):
-            bishop_and_occs &= bishop_and_occs - 1
-
-            if bishop_and_occs == 0:
-                end_square: int = bitscan_forward(last_value)
-                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-                break
-
-            last_value = bishop_and_occs
-    else:
-        combined_attacks |= bishop_attack_up_right
-
-    bishop_attack_down_left = BISHOP_ATTACKS[BISHOP_DOWN_LEFT][square]
-    bishop_and_occs = bishop_attack_down_left & combined_occ
-
-    if bishop_and_occs != 0:
-        end_square = bitscan_forward(bishop_and_occs)
-        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-    else:
-        combined_attacks |= bishop_attack_down_left
-
-    bishop_attack_down_right = BISHOP_ATTACKS[BISHOP_DOWN_RIGHT][square]
-    bishop_and_occs = bishop_attack_down_right & combined_occ
-
-    if bishop_and_occs != 0:
-        end_square = bitscan_forward(bishop_and_occs)
-        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
-    else:
-        combined_attacks |= bishop_attack_down_right
-
-    return combined_attacks
-
-
-def is_square_attacked_by_black(square: int, occupancy: int) -> bool:
-    """Return True if any square is under threat by black."""
-    if (PIECE_ARRAY[BP] & WHITE_PAWN_ATTACKS[square]) != 0:
-        return True
-
-    if (PIECE_ARRAY[BN] & KNIGHT_ATTACKS[square]) != 0:
-        return True
-
-    if (PIECE_ARRAY[BK] & KING_ATTACKS[square]) != 0:
-        return True
-
-    bishop_attacks: int = g(square, occupancy)
-    if (PIECE_ARRAY[BB] & bishop_attacks) != 0:
-        return True
-
-    if (PIECE_ARRAY[BQ] & bishop_attacks) != 0:
-        return True
-
-    rook_attacks: int = get_rook_moves_separate(square, occupancy)
-    if (PIECE_ARRAY[BR] & rook_attacks) != 0:
-        return True
-
-    return (PIECE_ARRAY[BQ] & rook_attacks) != 0
-
-
-def is_square_attacked_by_white(square: int, occupancy: int) -> bool:
-    """Return True if any square is under threat by white."""
-    if (PIECE_ARRAY[WP] & BLACK_PAWN_ATTACKS[square]) != 0:
-        return True
-
-    if (PIECE_ARRAY[WN] & KNIGHT_ATTACKS[square]) != 0:
-        return True
-
-    if (PIECE_ARRAY[WK] & KING_ATTACKS[square]) != 0:
-        return True
-
-    bishop_attacks: int = g(square, occupancy)
-
-    if (PIECE_ARRAY[WB] & bishop_attacks) != 0:
-        return True
-
-    if (PIECE_ARRAY[WQ] & bishop_attacks) != 0:
-        return True
-
-    rook_attacks: int = get_rook_moves_separate(square, occupancy)
-
-    if (PIECE_ARRAY[WR] & rook_attacks) != 0:
-        return True
-
-    return (PIECE_ARRAY[WQ] & rook_attacks) != 0
-
-
 MAGIC: int = 0x03F79D71B4CB0A89
 
-DEBRUIJN64: int = [
+DEBRUIJN64 = [
     0,
     47,
     1,
@@ -5702,23 +5478,230 @@ DEBRUIJN64: int = [
     63,
 ]
 
-BITBOARD_LENGTH = 64
+BITBOARD_AREA = 64
 LAST_BOARD_SLOT = 63
+BOARD_LENGTH = 8
+
+
+def print_move_no_nl(starting: int, target_square: int, tag: int) -> None:
+    """Print a single move inline."""
+    if starting < 0 or starting > LAST_BOARD_SLOT:
+        print(f"{starting}", end="")
+
+    else:
+        print(f"{SQ_CHAR_X[starting]}", end="")
+        print(f"{SQ_CHAR_Y[starting]}", end="")
+
+    # target
+    if target_square < 0 or target_square > LAST_BOARD_SLOT:
+        print("%d", target_square)
+
+    else:
+        print(f"{SQ_CHAR_X[target_square]}", end="")
+        print(f"{SQ_CHAR_Y[target_square]}", end="")
+
+    if tag in (
+        TAG_BCaptureKnightPromotion,
+        TAG_BKnightPromotion,
+        TAG_WKnightPromotion,
+        TAG_WCaptureKnightPromotion,
+    ):
+        print("n", end="")
+
+    elif tag in (
+        TAG_BCaptureRookPromotion,
+        TAG_BRookPromotion,
+        TAG_WRookPromotion,
+        TAG_WCaptureRookPromotion,
+    ):
+        print("r", end="")
+
+    elif tag in (
+        TAG_BCaptureBishopPromotion,
+        TAG_BBishopPromotion,
+        TAG_WBishopPromotion,
+        TAG_WCaptureBishopPromotion,
+    ):
+        print("b", end="")
+
+    elif tag in (
+        TAG_BCaptureQueenPromotion,
+        TAG_BQueenPromotion,
+        TAG_WQueenPromotion,
+        TAG_WCaptureQueenPromotion,
+    ):
+        print("q", end="")
+
+
+def get_rook_moves_separate(square: int, combined_occ: int) -> int:
+    """Return rook's current available moves."""
+    combined_attacks = 0
+    rook_attack_up: int = ROOK_ATTACKS[ROOK_UP][square]
+    rook_and_occs = rook_attack_up & combined_occ
+
+    if rook_and_occs != 0:
+        last_value = rook_and_occs
+
+        for _ in range(8):
+            rook_and_occs = rook_and_occs & rook_and_occs - 1
+
+            if rook_and_occs == 0:
+                end_square: int = bitscan_forward(last_value)
+                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+                break
+
+            last_value = rook_and_occs
+
+    else:
+        combined_attacks |= rook_attack_up
+
+    rook_attack_left = ROOK_ATTACKS[ROOK_LEFT][square]
+    rook_and_occs = rook_attack_left & combined_occ
+
+    if rook_and_occs != 0:
+        last_value = rook_and_occs
+
+        for _ in range(8):
+            rook_and_occs = rook_and_occs & rook_and_occs - 1
+
+            if rook_and_occs == 0:
+                end_square = bitscan_forward(last_value)
+                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+                break
+
+            last_value = rook_and_occs
+    else:
+        combined_attacks |= rook_attack_left
+
+    rook_attack_down = ROOK_ATTACKS[ROOK_DOWN][square]
+    rook_and_occs = rook_attack_down & combined_occ
+
+    if rook_and_occs != 0:
+        end_square = bitscan_forward(rook_and_occs)
+        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+
+    else:  # {
+        combined_attacks |= rook_attack_down
+
+    rook_attack_right = ROOK_ATTACKS[ROOK_RIGHT][square]
+    rook_and_occs = rook_attack_right & combined_occ
+    if rook_and_occs != 0:
+        end_square = bitscan_forward(rook_and_occs)
+        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+
+    else:
+        combined_attacks |= rook_attack_right
+
+    return combined_attacks
+
+
+def get_bishop_moves_separate(square: int, combined_occ: int) -> int:
+    """Return available moves for the bishop."""
+    combined_attacks = 0
+    bishop_attack_up_left = BISHOP_ATTACKS[BISHOP_UP_LEFT][square]
+    bishop_and_occs = bishop_attack_up_left & combined_occ
+
+    if bishop_and_occs:
+        last_value = bishop_and_occs
+
+        for _ in range(BOARD_LENGTH):
+            bishop_and_occs &= bishop_and_occs - 1
+            if not bishop_and_occs:
+                end_square = bitscan_forward(last_value)
+                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+                break
+
+            last_value = bishop_and_occs
+    else:
+        combined_attacks |= bishop_attack_up_left
+
+    bishop_attack_up_right = BISHOP_ATTACKS[BISHOP_UP_RIGHT][square]
+    bishop_and_occs = bishop_attack_up_right & combined_occ
+
+    if bishop_and_occs:
+        last_value = bishop_and_occs
+
+        for _ in range(BOARD_LENGTH):
+            bishop_and_occs &= bishop_and_occs - 1
+
+            if not bishop_and_occs:
+                end_square = bitscan_forward(last_value)
+                combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+                break
+
+            last_value = bishop_and_occs
+    else:
+        combined_attacks |= bishop_attack_up_right
+
+    bishop_attack_down_left = BISHOP_ATTACKS[BISHOP_DOWN_LEFT][square]
+    bishop_and_occs = bishop_attack_down_left & combined_occ
+
+    if bishop_and_occs:
+        end_square = bitscan_forward(bishop_and_occs)
+        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+    else:
+        combined_attacks |= bishop_attack_down_left
+
+    bishop_attack_down_right = BISHOP_ATTACKS[BISHOP_DOWN_RIGHT][square]
+    bishop_and_occs = bishop_attack_down_right & combined_occ
+
+    if bishop_and_occs:
+        end_square = bitscan_forward(bishop_and_occs)
+        combined_attacks |= INBETWEEN_BITBOARDS[square][end_square]
+    else:
+        combined_attacks |= bishop_attack_down_right
+
+    return combined_attacks
+
+
+def is_square_attacked_by_black(square: int, occupancy: int) -> bool:
+    """Return True if any square is under threat by black."""
+    if (
+        (PIECE_ARRAY[BP] & WHITE_PAWN_ATTACKS[square])
+        or (PIECE_ARRAY[BN] & KNIGHT_ATTACKS[square])
+        or (PIECE_ARRAY[BK] & KING_ATTACKS[square])
+    ):
+        return True
+
+    bishop_attacks = get_bishop_moves_separate(square, occupancy)
+    if (PIECE_ARRAY[BB] & bishop_attacks) or (PIECE_ARRAY[BQ] & bishop_attacks):
+        return True
+
+    rook_attacks: int = get_rook_moves_separate(square, occupancy)
+    return bool((PIECE_ARRAY[BR] & rook_attacks) or (PIECE_ARRAY[BQ] & rook_attacks))
+
+
+def is_square_attacked_by_white(square: int, occupancy: int) -> bool:
+    """Return True if any square is under threat by white."""
+    if (
+        (PIECE_ARRAY[WP] & BLACK_PAWN_ATTACKS[square])
+        or (PIECE_ARRAY[WN] & KNIGHT_ATTACKS[square])
+        or (PIECE_ARRAY[WK] & KING_ATTACKS[square])
+    ):
+        return True
+
+    bishop_attacks = get_bishop_moves_separate(square, occupancy)
+
+    if (PIECE_ARRAY[WB] & bishop_attacks) or (PIECE_ARRAY[WQ] & bishop_attacks):
+        return True
+
+    rook_attacks = get_rook_moves_separate(square, occupancy)
+    return bool((PIECE_ARRAY[WR] & rook_attacks) or (PIECE_ARRAY[WQ] & rook_attacks))
 
 
 def bitscan_forward(temp_bitboard: int) -> int:
     """Return the current end square."""
     result = MAGIC * (temp_bitboard ^ (temp_bitboard - 1))
-    index = (result & ((1 << BITBOARD_LENGTH) - 1)) >> 58
+    index = (result & ((1 << BITBOARD_AREA) - 1)) >> 58
 
-    if index < 0 or index > LAST_BOARD_SLOT:
-        print(f"error {index} out of range")
-        return -1
+    if 0 <= index <= LAST_BOARD_SLOT:
+        return DEBRUIJN64[index]
 
-    return DEBRUIJN64[index]
+    print(f"error {index} out of range")
+    return -1
 
 
-def set_starting_position():
+def set_starting_position() -> None:
     """Set up board based on predefined layout."""
     global ep
     global WHITE_TO_PLAY
@@ -5743,51 +5726,6 @@ def set_starting_position():
     PIECE_ARRAY[BK] = BK_STARTING_POSITION
 
 
-class Board:
-    """Represents a chessboard."""
-
-    def __init__(self):
-        self.piece_array = [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-        ]  # Corresponds to PIECE_ARRAY
-        self.white_to_play = True  # Corresponds to isWhite
-        self.castle_rights = [True, True, True, True]  # Corresponds to CASTLE_RIGHTS
-        self.ep = NO_SQUARE
-
-
-def set_starting_position_struct(board: Board):
-    """Set up Board object based on predefined layout."""
-    board.ep = NO_SQUARE
-    board.white_to_play = True
-    board.castle_rights[0] = True
-    board.castle_rights[1] = True
-    board.castle_rights[2] = True
-    board.castle_rights[3] = True
-    board.piece_array[WP] = WP_STARTING_POSITIONS
-    board.piece_array[WN] = WN_STARTING_POSITIONS
-    board.piece_array[WB] = WB_STARTING_POSITIONS
-    board.piece_array[WR] = WR_STARTING_POSITIONS
-    board.piece_array[WQ] = WQ_STARTING_POSITION
-    board.piece_array[WK] = WK_STARTING_POSITION
-    board.piece_array[BP] = BP_STARTING_POSITIONS
-    board.piece_array[BN] = BN_STARTING_POSITIONS
-    board.piece_array[BB] = BB_STARTING_POSITIONS
-    board.piece_array[BR] = BR_STARTING_POSITIONS
-    board.piece_array[BQ] = BQ_STARTING_POSITION
-    board.piece_array[BK] = BK_STARTING_POSITION
-
-
 def is_occupied(bitboard: int, square: int) -> bool:
     """Return True if any piece occupies bitboard at square."""
     return (bitboard & SQUARE_BBS[square]) != 0
@@ -5802,19 +5740,16 @@ def get_occupied_index(square: int) -> int:
     return EMPTY
 
 
-def print_board():
+def print_board() -> None:
     """Display the current state of the board."""
     print("Board:")
-    board_array = [0] * 64
+    board_array = [get_occupied_index(i) for i in range(BITBOARD_AREA)]
 
-    for i in range(64):
-        board_array[i] = get_occupied_index(i)
-
-    for rank in range(8):
+    for rank in range(BOARD_LENGTH):
         print("   ", end="")
 
-        for file in range(8):
-            square: int = (rank * 8) + file
+        for file in range(BOARD_LENGTH):
+            square: int = (rank * BOARD_LENGTH) + file
             print(
                 f"{PieceColours[board_array[square]]}"
                 f"{PieceNames[board_array[square]]} ",
@@ -5842,25 +5777,11 @@ def perft_inline(depth: int, ply: int) -> int:
     global WHITE_TO_PLAY
     global ep
 
-    piece_array_local = [
-        PIECE_ARRAY[0],
-        PIECE_ARRAY[1],
-        PIECE_ARRAY[2],
-        PIECE_ARRAY[3],
-        PIECE_ARRAY[4],
-        PIECE_ARRAY[5],
-        PIECE_ARRAY[6],
-        PIECE_ARRAY[7],
-        PIECE_ARRAY[8],
-        PIECE_ARRAY[9],
-        PIECE_ARRAY[10],
-        PIECE_ARRAY[11],
-    ]
-
+    piece_array_local = copy.copy(PIECE_ARRAY)
     move_list = [[0] * 4 for _ in range(50)]
-    move_count: int = 0
+    move_count = 0
 
-    white_occupancies: int = (
+    white_occupancies = (
         piece_array_local[0]
         | piece_array_local[1]
         | piece_array_local[2]
@@ -5869,7 +5790,7 @@ def perft_inline(depth: int, ply: int) -> int:
         | piece_array_local[5]
     )
 
-    black_occupancies: int = (
+    black_occupancies = (
         piece_array_local[6]
         | piece_array_local[7]
         | piece_array_local[8]
@@ -5878,53 +5799,53 @@ def perft_inline(depth: int, ply: int) -> int:
         | piece_array_local[11]
     )
 
-    combined_occupancies: int = white_occupancies | black_occupancies
-    empty_occupancies: int = ~combined_occupancies
+    combined_occupancies = white_occupancies | black_occupancies
+    empty_occupancies = ~combined_occupancies
     temp_bitboard: int
-    check_bit_board: int = 0
+    check_bit_board = 0
     temp_pin_bitboard: int
     temp_attack: int
     temp_empty: int
     temp_captures: int
-    starting_square: int = NO_SQUARE
-    target_square: int = NO_SQUARE
+    starting_square = NO_SQUARE
+    target_square = NO_SQUARE
 
-    pin_array = [[-1, -1] for _ in range(8)]
-    pin_number: int = 0
+    pin_array = [[-1, -1] for _ in range(BOARD_LENGTH)]
+    pin_number = 0
 
     # Generate Moves
     if WHITE_TO_PLAY:
-        white_king_check_count: int = 0
-        white_king_position: int = bitscan_forward(piece_array_local[WK])
+        white_king_check_count = 0
+        white_king_position = bitscan_forward(piece_array_local[WK])
 
         # pawns
         temp_bitboard = piece_array_local[BP] & WHITE_PAWN_ATTACKS[white_king_position]
-        if temp_bitboard != 0:
-            pawn_square: int = bitscan_forward(temp_bitboard)
+        if temp_bitboard:
+            pawn_square = bitscan_forward(temp_bitboard)
             check_bit_board = EMPTY_BITBOARD << pawn_square
             white_king_check_count += 1
 
         # knights
         temp_bitboard = piece_array_local[BN] & KNIGHT_ATTACKS[white_king_position]
-        if temp_bitboard != 0:
-            knight_square: int = bitscan_forward(temp_bitboard)
+        if temp_bitboard:
+            knight_square = bitscan_forward(temp_bitboard)
             check_bit_board = SQUARE_BBS[knight_square]
             white_king_check_count += 1
 
         # bishops
-        bishop_attacks_checks: int = g(
+        bishop_attacks_checks = get_bishop_moves_separate(
             white_king_position,
             black_occupancies,
         )
         temp_bitboard = piece_array_local[BB] & bishop_attacks_checks
-        while temp_bitboard != 0:
+        while temp_bitboard:
             piece_square: int = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 & white_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 white_king_check_count += 1
 
@@ -5932,7 +5853,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 pinned_square: int = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -5941,22 +5862,21 @@ def perft_inline(depth: int, ply: int) -> int:
 
         # queen
         temp_bitboard = piece_array_local[BQ] & bishop_attacks_checks
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 & white_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 white_king_check_count += 1
-
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -5964,26 +5884,27 @@ def perft_inline(depth: int, ply: int) -> int:
             temp_bitboard &= temp_bitboard - 1
 
         # rook
-        rook_attacks: int = get_rook_moves_separate(
-            white_king_position, black_occupancies,
+        rook_attacks = get_rook_moves_separate(
+            white_king_position,
+            black_occupancies,
         )
         temp_bitboard = piece_array_local[BR] & rook_attacks
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 & white_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 white_king_check_count += 1
 
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -5993,22 +5914,22 @@ def perft_inline(depth: int, ply: int) -> int:
         # queen
         temp_bitboard = piece_array_local[BQ] & rook_attacks
 
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 & white_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[white_king_position][piece_square]
                 white_king_check_count += 1
 
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -6022,37 +5943,34 @@ def perft_inline(depth: int, ply: int) -> int:
             )
             temp_attack = KING_ATTACKS[white_king_position]
             temp_empty = temp_attack & empty_occupancies
-            while temp_empty != 0:
+
+            while temp_empty:
                 target_square = bitscan_forward(temp_empty)
                 temp_empty &= temp_empty - 1
 
-                if (piece_array_local[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[BP] & WHITE_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[BN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[BK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
-                if (piece_array_local[BN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[BK] & KING_ATTACKS[target_square]) != 0:
-                    continue
-
-                bishop_attacks: int = g(
+                bishop_attacks: int = get_bishop_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
-                if (piece_array_local[BB] & bishop_attacks) != 0:
+                if (piece_array_local[BB] & bishop_attacks) or (
+                    piece_array_local[BQ] & bishop_attacks
+                ):
                     continue
 
-                if (piece_array_local[BQ] & bishop_attacks) != 0:
-                    continue
-
-                rook_attacks: int = get_rook_moves_separate(
+                rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
-                if (piece_array_local[BR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[BQ] & rook_attacks) != 0:
+                if (piece_array_local[BR] & rook_attacks) or (
+                    piece_array_local[BQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = white_king_position
@@ -6063,37 +5981,33 @@ def perft_inline(depth: int, ply: int) -> int:
 
             # captures
             temp_captures = temp_attack & black_occupancies
-            while temp_captures != 0:
+            while temp_captures:
                 target_square = bitscan_forward(temp_captures)
                 temp_captures &= temp_captures - 1
 
-                if (piece_array_local[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[BP] & WHITE_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[BN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[BK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
-                if (piece_array_local[BN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[BK] & KING_ATTACKS[target_square]) != 0:
-                    continue
-
-                bishop_attacks: int = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
-                if (piece_array_local[BB] & bishop_attacks) != 0:
+                if (piece_array_local[BB] & bishop_attacks) or (
+                    piece_array_local[BQ] & bishop_attacks
+                ):
                     continue
 
-                if (piece_array_local[BQ] & bishop_attacks) != 0:
-                    continue
-
-                rook_attacks: int = get_rook_moves_separate(
+                rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
-                if (piece_array_local[BR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[BQ] & rook_attacks) != 0:
+                if (piece_array_local[BR] & rook_attacks) or (
+                    piece_array_local[BQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = white_king_position
@@ -6103,45 +6017,42 @@ def perft_inline(depth: int, ply: int) -> int:
                 move_count += 1
 
         else:
-            if white_king_check_count == 0:
+            if not white_king_check_count:
                 check_bit_board = MAX_ULONG
 
-            occupancies_without_white_king: int = combined_occupancies & (
+            occupancies_without_white_king = combined_occupancies & (
                 ~piece_array_local[WK]
             )
             temp_attack = KING_ATTACKS[white_king_position]
             temp_empty = temp_attack & empty_occupancies
-            while temp_empty != 0:
+
+            while temp_empty:
                 target_square = bitscan_forward(temp_empty)
                 temp_empty &= temp_empty - 1
 
-                if (piece_array_local[BP] & WHITE_PAWN_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[BP] & WHITE_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[BN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[BK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
-                if (piece_array_local[BN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[BK] & KING_ATTACKS[target_square]) != 0:
-                    continue
-
-                bishop_attacks: int = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
-                if (piece_array_local[BB] & bishop_attacks) != 0:
+                if (piece_array_local[BB] & bishop_attacks) or (
+                    piece_array_local[BQ] & bishop_attacks
+                ):
                     continue
 
-                if (piece_array_local[BQ] & bishop_attacks) != 0:
-                    continue
-
-                rook_attacks: int = get_rook_moves_separate(
+                rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
-                if (piece_array_local[BR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[BQ] & rook_attacks) != 0:
+                if (piece_array_local[BR] & rook_attacks) or (
+                    piece_array_local[BQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = white_king_position
@@ -6165,7 +6076,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 if (piece_array_local[BK] & KING_ATTACKS[target_square]) != 0:
                     continue
 
-                bishop_attacks: int = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
@@ -6175,7 +6086,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 if (piece_array_local[BQ] & bishop_attacks) != 0:
                     continue
 
-                rook_attacks: int = get_rook_moves_separate(
+                rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancies_without_white_king,
                 )
@@ -6236,14 +6147,14 @@ def perft_inline(depth: int, ply: int) -> int:
 
             temp_bitboard = piece_array_local[WN]
 
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= (
                     temp_bitboard - 1
                 )  # removes the knight from that square to not infinitely loop
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
@@ -6254,7 +6165,8 @@ def perft_inline(depth: int, ply: int) -> int:
                     (KNIGHT_ATTACKS[starting_square] & black_occupancies)
                     & check_bit_board
                 ) & temp_pin_bitboard  # gets knight captures
-                while temp_attack != 0:
+
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6269,7 +6181,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6281,28 +6193,27 @@ def perft_inline(depth: int, ply: int) -> int:
 
             temp_bitboard = piece_array_local[WP]
 
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
                                 white_king_position
                             ][pin_array[i][PINNING_PIECE_INDEX]]
 
-                if (
+                if not (
                     SQUARE_BBS[starting_square - 8] & combined_occupancies
-                ) == 0:  # { #if up one square is empty
+                ):  # { #if up one square is empty
                     if (
-                        (SQUARE_BBS[starting_square - 8] & check_bit_board)
-                        & temp_pin_bitboard
-                    ) != 0:
+                        SQUARE_BBS[starting_square - 8] & check_bit_board
+                    ) & temp_pin_bitboard:
                         if (
                             SQUARE_BBS[starting_square] & RANK_7_BITBOARD
-                        ) != 0:  # { #if promotion
+                        ):  # { #if promotion
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = starting_square - 8
                             move_list[move_count][MOVE_TAG] = TAG_WQueenPromotion
@@ -6336,14 +6247,13 @@ def perft_inline(depth: int, ply: int) -> int:
 
                     if (
                         (SQUARE_BBS[starting_square] & RANK_2_BITBOARD)
-                        != 0  # if on rank 2
                         and (
                             (SQUARE_BBS[starting_square - 16] & check_bit_board)
                             & temp_pin_bitboard
                         )
-                        != 0  # if not pinned or
-                        and (SQUARE_BBS[starting_square - 16] & combined_occupancies)
-                        == 0
+                        and not (
+                            SQUARE_BBS[starting_square - 16] & combined_occupancies
+                        )
                     ):  # if up two squares and one square are empty
                         move_list[move_count][MOVE_STARTING] = starting_square
                         move_list[move_count][MOVE_TARGET] = starting_square - 16
@@ -6356,13 +6266,11 @@ def perft_inline(depth: int, ply: int) -> int:
                     & check_bit_board
                 ) & temp_pin_bitboard  # if black piece diagonal to pawn
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
-                    if (
-                        SQUARE_BBS[starting_square] & RANK_7_BITBOARD
-                    ) != 0:  # { #if promotion
+                    if SQUARE_BBS[starting_square] & RANK_7_BITBOARD:
                         move_list[move_count][MOVE_STARTING] = starting_square
                         move_list[move_count][MOVE_TARGET] = target_square
                         move_list[move_count][MOVE_TAG] = TAG_WCaptureQueenPromotion
@@ -6396,7 +6304,6 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 if (
                     (SQUARE_BBS[starting_square] & RANK_5_BITBOARD)
-                    != 0  # check rank for ep
                     and ep != NO_SQUARE
                     and (
                         WHITE_PAWN_ATTACKS[starting_square]
@@ -6404,45 +6311,44 @@ def perft_inline(depth: int, ply: int) -> int:
                         & check_bit_board
                         & temp_pin_bitboard
                     )
-                    != 0
                 ):
-                    if (piece_array_local[WK] & RANK_5_BITBOARD) == 0 or (
-                        (piece_array_local[BR] & RANK_5_BITBOARD) == 0
-                        and (piece_array_local[BQ] & RANK_5_BITBOARD) == 0
+                    if not (piece_array_local[WK] & RANK_5_BITBOARD) or not (
+                        (piece_array_local[BR] & RANK_5_BITBOARD)
+                        and not (piece_array_local[BQ] & RANK_5_BITBOARD)
                     ):  # { #if no king on rank 5
                         move_list[move_count][MOVE_STARTING] = starting_square
-                        move_list[move_count][MOVE_TARGET] = int(ep)
+                        move_list[move_count][MOVE_TARGET] = ep
                         move_list[move_count][MOVE_TAG] = TAG_WHITEEP
                         move_list[move_count][MOVE_PIECE] = WP
                         move_count += 1
 
                     else:  # wk and br or bq on rank 5
-                        occupancy_without_ep_pawns: int = (
+                        occupancy_without_ep_pawns = (
                             combined_occupancies & ~SQUARE_BBS[starting_square]
                         )
                         occupancy_without_ep_pawns &= ~SQUARE_BBS[ep + 8]
 
-                        rook_attacks_from_king: int = get_rook_moves_separate(
+                        rook_attacks_from_king = get_rook_moves_separate(
                             white_king_position,
                             occupancy_without_ep_pawns,
                         )
 
-                        if (rook_attacks_from_king & piece_array_local[BR]) == 0 and (
-                            rook_attacks_from_king & piece_array_local[BQ]
-                        ) == 0:
+                        if not (
+                            rook_attacks_from_king & piece_array_local[BR]
+                        ) and not (rook_attacks_from_king & piece_array_local[BQ]):
                             move_list[move_count][MOVE_STARTING] = starting_square
-                            move_list[move_count][MOVE_TARGET] = int(ep)
+                            move_list[move_count][MOVE_TARGET] = ep
                             move_list[move_count][MOVE_TAG] = TAG_WHITEEP
                             move_list[move_count][MOVE_PIECE] = WP
                             move_count += 1
 
             temp_bitboard = piece_array_local[WR]
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
                 temp_pin_bitboard = MAX_ULONG
 
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
@@ -6457,7 +6363,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     (rook_attacks & black_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6471,7 +6377,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     (rook_attacks & empty_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6482,19 +6388,19 @@ def perft_inline(depth: int, ply: int) -> int:
                     move_count += 1
 
             temp_bitboard = piece_array_local[WB]
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
-
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
                                 white_king_position
                             ][pin_array[i][PINNING_PIECE_INDEX]]
 
-                bishop_attacks = g(
+                bishop_attacks = get_bishop_moves_separate(
                     starting_square,
                     combined_occupancies,
                 )
@@ -6515,7 +6421,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 temp_attack = (
                     (bishop_attacks & empty_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6526,12 +6432,12 @@ def perft_inline(depth: int, ply: int) -> int:
                     move_count += 1
 
             temp_bitboard = piece_array_local[WQ]
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
-
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
@@ -6542,7 +6448,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     starting_square,
                     combined_occupancies,
                 )
-                queen_attacks |= g(
+                queen_attacks |= get_bishop_moves_separate(
                     starting_square,
                     combined_occupancies,
                 )
@@ -6551,7 +6457,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     (queen_attacks & black_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6564,7 +6470,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 temp_attack = (
                     (queen_attacks & empty_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6575,45 +6481,45 @@ def perft_inline(depth: int, ply: int) -> int:
                     move_count += 1
 
     else:  # { #black move
-        black_king_check_count: int = 0
-        black_king_position: int = bitscan_forward(piece_array_local[BK])
+        black_king_check_count = 0
+        black_king_position = bitscan_forward(piece_array_local[BK])
 
         # pawns
         temp_bitboard = piece_array_local[WP] & BLACK_PAWN_ATTACKS[black_king_position]
-        if temp_bitboard != 0:
-            pawn_square: int = bitscan_forward(temp_bitboard)
+        if temp_bitboard:
+            pawn_square = bitscan_forward(temp_bitboard)
             check_bit_board = SQUARE_BBS[pawn_square]
             black_king_check_count += 1
 
         # knights
         temp_bitboard = piece_array_local[WN] & KNIGHT_ATTACKS[black_king_position]
-        if temp_bitboard != 0:
-            knight_square: int = bitscan_forward(temp_bitboard)
+        if temp_bitboard:
+            knight_square = bitscan_forward(temp_bitboard)
             check_bit_board = SQUARE_BBS[knight_square]
             black_king_check_count += 1
 
         # bishops
-        bishop_attacks_checks: int = g(
+        bishop_attacks_checks = get_bishop_moves_separate(
             black_king_position,
             white_occupancies,
         )
         temp_bitboard = piece_array_local[WB] & bishop_attacks_checks
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 & black_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 black_king_check_count += 1
 
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -6622,22 +6528,22 @@ def perft_inline(depth: int, ply: int) -> int:
 
         # queen
         temp_bitboard = piece_array_local[WQ] & bishop_attacks_checks
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 & black_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 black_king_check_count += 1
 
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -6645,26 +6551,28 @@ def perft_inline(depth: int, ply: int) -> int:
             temp_bitboard &= temp_bitboard - 1
 
         # rook
-        rook_attacks: int = get_rook_moves_separate(
-            black_king_position, white_occupancies,
+        rook_attacks = get_rook_moves_separate(
+            black_king_position,
+            white_occupancies,
         )
         temp_bitboard = piece_array_local[WR] & rook_attacks
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 & black_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 black_king_check_count += 1
 
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -6673,22 +6581,22 @@ def perft_inline(depth: int, ply: int) -> int:
 
         # queen
         temp_bitboard = piece_array_local[WQ] & rook_attacks
-        while temp_bitboard != 0:
-            piece_square: int = bitscan_forward(temp_bitboard)
+        while temp_bitboard:
+            piece_square = bitscan_forward(temp_bitboard)
             temp_pin_bitboard = (
                 INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 & black_occupancies
             )
 
-            if temp_pin_bitboard == 0:
+            if not temp_pin_bitboard:
                 check_bit_board = INBETWEEN_BITBOARDS[black_king_position][piece_square]
                 black_king_check_count += 1
 
             else:
-                pinned_square: int = bitscan_forward(temp_pin_bitboard)
+                pinned_square = bitscan_forward(temp_pin_bitboard)
                 temp_pin_bitboard &= temp_pin_bitboard - 1
 
-                if temp_pin_bitboard == 0:
+                if not temp_pin_bitboard:
                     pin_array[pin_number][PINNED_SQUARE_INDEX] = pinned_square
                     pin_array[pin_number][PINNING_PIECE_INDEX] = piece_square
                     pin_number += 1
@@ -6701,37 +6609,33 @@ def perft_inline(depth: int, ply: int) -> int:
             )
             temp_attack = KING_ATTACKS[black_king_position] & white_occupancies
 
-            while temp_attack != 0:
+            while temp_attack:
                 target_square = bitscan_forward(temp_attack)
                 temp_attack &= temp_attack - 1
 
-                if (piece_array_local[WP] & BLACK_PAWN_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[WP] & BLACK_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[WN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[WK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
-                if (piece_array_local[WN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[WK] & KING_ATTACKS[target_square]) != 0:
-                    continue
-
-                bishop_attacks: int = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WB] & bishop_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & bishop_attacks) != 0:
+                if (piece_array_local[WB] & bishop_attacks) or (
+                    piece_array_local[WQ] & bishop_attacks
+                ):
                     continue
 
                 rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & rook_attacks) != 0:
+                if (piece_array_local[WR] & rook_attacks) or (
+                    piece_array_local[WQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = starting_square
@@ -6742,37 +6646,33 @@ def perft_inline(depth: int, ply: int) -> int:
 
             temp_attack = KING_ATTACKS[black_king_position] & ~combined_occupancies
 
-            while temp_attack != 0:
+            while temp_attack:
                 target_square = bitscan_forward(temp_attack)
                 temp_attack &= temp_attack - 1
 
-                if (piece_array_local[WP] & WHITE_PAWN_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[WP] & WHITE_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[WN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[WK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
-                if (piece_array_local[WN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[WK] & KING_ATTACKS[target_square]) != 0:
-                    continue
-
-                bishop_attacks: int = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WB] & bishop_attacks) != 0:
+                if (piece_array_local[WB] & bishop_attacks) or (
+                    piece_array_local[WQ] & bishop_attacks
+                ):
                     continue
 
-                if (piece_array_local[WQ] & bishop_attacks) != 0:
-                    continue
-
-                rook_attacks: int = get_rook_moves_separate(
+                rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & rook_attacks) != 0:
+                if (piece_array_local[WR] & rook_attacks) or (
+                    piece_array_local[WQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = starting_square
@@ -6787,28 +6687,27 @@ def perft_inline(depth: int, ply: int) -> int:
 
             temp_bitboard = piece_array_local[BP]
 
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
                                 black_king_position
                             ][pin_array[i][PINNING_PIECE_INDEX]]
 
-                if (
+                if not (
                     SQUARE_BBS[starting_square + 8] & combined_occupancies
-                ) == 0:  # { #if up one square is empty
+                ):  # { #if up one square is empty
                     if (
-                        (SQUARE_BBS[starting_square + 8] & check_bit_board)
-                        & temp_pin_bitboard
-                    ) != 0:
+                        SQUARE_BBS[starting_square + 8] & check_bit_board
+                    ) & temp_pin_bitboard:
                         if (
                             SQUARE_BBS[starting_square] & RANK_2_BITBOARD
-                        ) != 0:  # { #if promotion
+                        ):  # { #if promotion
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = starting_square + 8
                             move_list[move_count][MOVE_TAG] = TAG_BBishopPromotion
@@ -6842,14 +6741,13 @@ def perft_inline(depth: int, ply: int) -> int:
 
                     if (
                         (SQUARE_BBS[starting_square] & RANK_7_BITBOARD)
-                        != 0  # if on rank 2
                         and (
                             (SQUARE_BBS[starting_square + 16] & check_bit_board)
                             & temp_pin_bitboard
                         )
-                        != 0
-                        and ((SQUARE_BBS[starting_square + 16]) & combined_occupancies)
-                        == 0
+                        and not (
+                            (SQUARE_BBS[starting_square + 16]) & combined_occupancies
+                        )
                     ):  # { #if up two squares and one square are empty
                         move_list[move_count][MOVE_STARTING] = starting_square
                         move_list[move_count][MOVE_TARGET] = starting_square + 16
@@ -6862,13 +6760,11 @@ def perft_inline(depth: int, ply: int) -> int:
                     & check_bit_board
                 ) & temp_pin_bitboard  # if black piece diagonal to pawn
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)  # find the bit
                     temp_attack &= temp_attack - 1
 
-                    if (
-                        SQUARE_BBS[starting_square] & RANK_2_BITBOARD
-                    ) != 0:  # { #if promotion
+                    if SQUARE_BBS[starting_square] & RANK_2_BITBOARD:  # { #if promotion
                         move_list[move_count][MOVE_STARTING] = starting_square
                         move_list[move_count][MOVE_TARGET] = target_square
                         move_list[move_count][MOVE_TAG] = TAG_BCaptureQueenPromotion
@@ -6902,7 +6798,6 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 if (
                     (SQUARE_BBS[starting_square] & RANK_4_BITBOARD)
-                    != 0  # check rank for ep
                     and ep != NO_SQUARE
                     and (
                         (
@@ -6911,11 +6806,10 @@ def perft_inline(depth: int, ply: int) -> int:
                         )
                         & temp_pin_bitboard
                     )
-                    != 0
                 ):
-                    if (piece_array_local[BK] & RANK_4_BITBOARD) == 0 or (
-                        (piece_array_local[WR] & RANK_4_BITBOARD) == 0
-                        and (piece_array_local[WQ] & RANK_4_BITBOARD) == 0
+                    if not (piece_array_local[BK] & RANK_4_BITBOARD) or not (
+                        (piece_array_local[WR] & RANK_4_BITBOARD)
+                        and not (piece_array_local[WQ] & RANK_4_BITBOARD)
                     ):  # { #if no king on rank 5
                         move_list[move_count][MOVE_STARTING] = starting_square
                         move_list[move_count][MOVE_TARGET] = int(ep)
@@ -6934,9 +6828,9 @@ def perft_inline(depth: int, ply: int) -> int:
                             occupancy_without_ep_pawns,
                         )
 
-                        if (rook_attacks_from_king & piece_array_local[WR]) == 0 and (
-                            rook_attacks_from_king & piece_array_local[WQ]
-                        ) == 0:
+                        if not (
+                            rook_attacks_from_king & piece_array_local[WR]
+                        ) and not (rook_attacks_from_king & piece_array_local[WQ]):
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = int(ep)
                             move_list[move_count][MOVE_TAG] = TAG_BLACKEP
@@ -6945,7 +6839,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
             temp_bitboard = piece_array_local[BN]
 
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(
                     temp_bitboard,
                 )  # looks for the starting_square
@@ -6954,7 +6848,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 )  # removes the knight from that square to not infinitely loop
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
@@ -6965,7 +6859,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     (KNIGHT_ATTACKS[starting_square] & white_occupancies)
                     & check_bit_board
                 ) & temp_pin_bitboard  # gets knight captures
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6980,7 +6874,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -6991,19 +6885,19 @@ def perft_inline(depth: int, ply: int) -> int:
                     move_count += 1
 
             temp_bitboard = piece_array_local[BB]
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
                                 black_king_position
                             ][pin_array[i][PINNING_PIECE_INDEX]]
 
-                bishop_attacks = g(
+                bishop_attacks = get_bishop_moves_separate(
                     starting_square,
                     combined_occupancies,
                 )
@@ -7011,7 +6905,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 temp_attack = (
                     (bishop_attacks & white_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -7024,7 +6918,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 temp_attack = (
                     (bishop_attacks & (~combined_occupancies)) & check_bit_board
                 ) & temp_pin_bitboard
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -7035,12 +6929,12 @@ def perft_inline(depth: int, ply: int) -> int:
                     move_count += 1
 
             temp_bitboard = piece_array_local[BR]
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
@@ -7055,7 +6949,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 temp_attack = (
                     (rook_attacks & white_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -7068,7 +6962,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 temp_attack = (
                     (rook_attacks & (~combined_occupancies)) & check_bit_board
                 ) & temp_pin_bitboard
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -7079,12 +6973,12 @@ def perft_inline(depth: int, ply: int) -> int:
                     move_count += 1
 
             temp_bitboard = piece_array_local[BQ]
-            while temp_bitboard != 0:
+            while temp_bitboard:
                 starting_square = bitscan_forward(temp_bitboard)
                 temp_bitboard &= temp_bitboard - 1
 
                 temp_pin_bitboard = MAX_ULONG
-                if pin_number != 0:
+                if pin_number:
                     for i in range(pin_number):
                         if pin_array[i][PINNED_SQUARE_INDEX] == starting_square:
                             temp_pin_bitboard = INBETWEEN_BITBOARDS[
@@ -7095,7 +6989,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     starting_square,
                     combined_occupancies,
                 )
-                queen_attacks |= g(
+                queen_attacks |= get_bishop_moves_separate(
                     starting_square,
                     combined_occupancies,
                 )
@@ -7104,7 +6998,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     (queen_attacks & white_occupancies) & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -7118,7 +7012,7 @@ def perft_inline(depth: int, ply: int) -> int:
                     (queen_attacks & (~combined_occupancies)) & check_bit_board
                 ) & temp_pin_bitboard
 
-                while temp_attack != 0:
+                while temp_attack:
                     target_square = bitscan_forward(temp_attack)
                     temp_attack &= temp_attack - 1
 
@@ -7131,40 +7025,36 @@ def perft_inline(depth: int, ply: int) -> int:
             temp_attack = (
                 KING_ATTACKS[black_king_position] & white_occupancies
             )  # gets knight captures
-            while temp_attack != 0:
+            while temp_attack:
                 target_square = bitscan_forward(temp_attack)
                 temp_attack &= temp_attack - 1
 
-                if (piece_array_local[WP] & BLACK_PAWN_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[WN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[WK] & KING_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[WP] & BLACK_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[WN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[WK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
                 occupancy_without_black_king = combined_occupancies & (
                     ~piece_array_local[BK]
                 )
-                bishop_attacks = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WB] & bishop_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & bishop_attacks) != 0:
+                if (piece_array_local[WB] & bishop_attacks) or (
+                    piece_array_local[WQ] & bishop_attacks
+                ):
                     continue
 
                 rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & rook_attacks) != 0:
+                if (piece_array_local[WR] & rook_attacks) or (
+                    piece_array_local[WQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = black_king_position
@@ -7177,40 +7067,36 @@ def perft_inline(depth: int, ply: int) -> int:
                 ~combined_occupancies
             )  # get knight moves to emtpy squares
 
-            while temp_attack != 0:
+            while temp_attack:
                 target_square = bitscan_forward(temp_attack)
                 temp_attack &= temp_attack - 1
 
-                if (piece_array_local[WP] & BLACK_PAWN_ATTACKS[target_square]) != 0:
+                if (
+                    (piece_array_local[WP] & BLACK_PAWN_ATTACKS[target_square])
+                    or (piece_array_local[WN] & KNIGHT_ATTACKS[target_square])
+                    or (piece_array_local[WK] & KING_ATTACKS[target_square])
+                ):
                     continue
 
-                if (piece_array_local[WN] & KNIGHT_ATTACKS[target_square]) != 0:
-                    continue
-
-                if (piece_array_local[WK] & KING_ATTACKS[target_square]) != 0:
-                    continue
-
-                occupancy_without_black_king: int = combined_occupancies & (
+                occupancy_without_black_king = combined_occupancies & (
                     ~piece_array_local[BK]
                 )
-                bishop_attacks = g(
+                bishop_attacks = get_bishop_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WB] & bishop_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & bishop_attacks) != 0:
+                if (piece_array_local[WB] & bishop_attacks) or (
+                    piece_array_local[WQ] & bishop_attacks
+                ):
                     continue
 
                 rook_attacks = get_rook_moves_separate(
                     target_square,
                     occupancy_without_black_king,
                 )
-                if (piece_array_local[WR] & rook_attacks) != 0:
-                    continue
-
-                if (piece_array_local[WQ] & rook_attacks) != 0:
+                if (piece_array_local[WR] & rook_attacks) or (
+                    piece_array_local[WQ] & rook_attacks
+                ):
                     continue
 
                 move_list[move_count][MOVE_STARTING] = black_king_position
@@ -7219,7 +7105,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 move_list[move_count][MOVE_PIECE] = BK
                 move_count += 1
 
-        if black_king_check_count == 0:
+        if not black_king_check_count:
             if (
                 CASTLE_RIGHTS[BKS_CASTLE_RIGHTS]
                 and black_king_position == E8  # king on e1
@@ -7263,10 +7149,10 @@ def perft_inline(depth: int, ply: int) -> int:
     if depth == 1:
         return move_count
 
-    nodes: int = 0
+    nodes = 0
     prior_nodes: int
-    copy_ep: int = ep
-    copy_castle: bool = [
+    copy_ep = ep
+    copy_castle = [
         CASTLE_RIGHTS[0],
         CASTLE_RIGHTS[1],
         CASTLE_RIGHTS[2],
@@ -7274,12 +7160,12 @@ def perft_inline(depth: int, ply: int) -> int:
     ]
 
     for move_index in range(move_count):
-        starting_square: int = move_list[move_index][MOVE_STARTING]
-        target_square: int = move_list[move_index][MOVE_TARGET]
-        piece: int = move_list[move_index][MOVE_PIECE]
-        tag: int = move_list[move_index][MOVE_TAG]
+        starting_square = move_list[move_index][MOVE_STARTING]
+        target_square = move_list[move_index][MOVE_TARGET]
+        piece = move_list[move_index][MOVE_PIECE]
+        tag = move_list[move_index][MOVE_TAG]
 
-        capture_index: int = -1
+        capture_index = -1
 
         WHITE_TO_PLAY = not WHITE_TO_PLAY
 
@@ -7297,7 +7183,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 if piece >= WP and piece <= WK:
                     for i in range(BP, BK + 1):
-                        if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                        if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                             capture_index = i
                             break
 
@@ -7305,7 +7191,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 else:  # { #is black
                     for i in range(WP, BP):
-                        if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                        if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                             capture_index = i
                             break
 
@@ -7317,7 +7203,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 if piece >= 0 and piece <= WK:
                     for i in range(BP, BK + 1):
-                        if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                        if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                             capture_index = i
                             break
 
@@ -7325,7 +7211,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 else:  # { #is black
                     for i in range(WP, BP):
-                        if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                        if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                             capture_index = i
                             break
 
@@ -7438,7 +7324,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(WP, BP):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7450,7 +7336,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 ep = NO_SQUARE
                 for i in range(WP, BP):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7461,7 +7347,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(WP, BP):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7472,7 +7358,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(WP, BP):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7483,7 +7369,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(BP, BK + 1):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7494,7 +7380,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(BP, BK + 1):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7505,7 +7391,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(BP, BK + 1):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
 
@@ -7516,7 +7402,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
                 ep = NO_SQUARE
                 for i in range(BP, BK + 1):
-                    if (PIECE_ARRAY[i] & SQUARE_BBS[target_square]) != 0:
+                    if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
                 PIECE_ARRAY[capture_index] &= ~SQUARE_BBS[target_square]
@@ -7537,27 +7423,23 @@ def perft_inline(depth: int, ply: int) -> int:
             CASTLE_RIGHTS[BKS_CASTLE_RIGHTS] = False
             CASTLE_RIGHTS[BQS_CASTLE_RIGHTS] = False
         elif piece == WR:
-            if (
-                CASTLE_RIGHTS[WKS_CASTLE_RIGHTS]
-                and (PIECE_ARRAY[WR] & SQUARE_BBS[H1]) == 0
+            if CASTLE_RIGHTS[WKS_CASTLE_RIGHTS] and not (
+                PIECE_ARRAY[WR] & SQUARE_BBS[H1]
             ):
                 CASTLE_RIGHTS[WKS_CASTLE_RIGHTS] = False
 
-            if (
-                CASTLE_RIGHTS[WQS_CASTLE_RIGHTS]
-                and (PIECE_ARRAY[WR] & SQUARE_BBS[A1]) == 0
+            if CASTLE_RIGHTS[WQS_CASTLE_RIGHTS] and not (
+                PIECE_ARRAY[WR] & SQUARE_BBS[A1]
             ):
                 CASTLE_RIGHTS[WQS_CASTLE_RIGHTS] = False
         elif piece == BR:
-            if (
-                CASTLE_RIGHTS[BKS_CASTLE_RIGHTS]
-                and (PIECE_ARRAY[BR] & SQUARE_BBS[H8]) == 0
+            if CASTLE_RIGHTS[BKS_CASTLE_RIGHTS] and not (
+                PIECE_ARRAY[BR] & SQUARE_BBS[H8]
             ):
                 CASTLE_RIGHTS[BKS_CASTLE_RIGHTS] = False
 
-            if (
-                CASTLE_RIGHTS[BQS_CASTLE_RIGHTS]
-                and (PIECE_ARRAY[BR] & SQUARE_BBS[A8]) == 0
+            if CASTLE_RIGHTS[BQS_CASTLE_RIGHTS] and not (
+                PIECE_ARRAY[BR] & SQUARE_BBS[A8]
             ):
                 CASTLE_RIGHTS[BQS_CASTLE_RIGHTS] = False
 
@@ -7716,7 +7598,7 @@ def perft_inline(depth: int, ply: int) -> int:
         CASTLE_RIGHTS[3] = copy_castle[3]
         ep = copy_ep
 
-        if ply == 0:
+        if not ply:
             print_move_no_nl(
                 move_list[move_index][MOVE_STARTING],
                 move_list[move_index][MOVE_TARGET],
@@ -7727,12 +7609,12 @@ def perft_inline(depth: int, ply: int) -> int:
     return nodes
 
 
-def current_milli_time():
+def current_milli_time() -> float:
     """Return the current epoch in milliseconds."""
     return round(time.time() * 1000)
 
 
-def main():
+def main() -> None:
     """Time the implementation."""
     depth = DEFAULT_DEPTH
     set_starting_position()
