@@ -24,6 +24,7 @@ h2h3: 4463070
 h2h4: 5385554
 """
 
+
 def test_perft_inline(capsys):
     initial_ply = 0
     depth = DEFAULT_DEPTH
@@ -35,4 +36,3 @@ def test_perft_inline(capsys):
 
     captured = capsys.readouterr()
     assert captured.out == EXPECTED_OUTPUT
-
