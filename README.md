@@ -5,13 +5,11 @@ This code is originally from "Coding with Tom" videos comparing implementations 
 - [I Coded a Chess Engine in 7 Languages to test Performance!][cwt-1]
 - [12 Programming Languages Tested! - Chess move generator test with updated results][cwt-2]
 
-Cited source for the bitboard chess engine approach:
-
-- [Bitboard CHESS ENGINE in C: intro][bitboard]
+See these [notes on the bitboard algorithm][bitboard] to better understand what we're implementing.
 
 [cwt-1]: https://www.youtube.com/watch?v=cFNBIYwht8o
 [cwt-2]: https://www.youtube.com/watch?v=m4c38NS43cE
-[bitboard]: https://www.youtube.com/watch?v=QUNP-UjujBM
+[bitboard]: ./docs/bitboard-algorithm.md
 
 The constants are massive and almost everything is written in one function to maximize performance.
 
