@@ -1,0 +1,8 @@
+check:
+  ruff check .
+
+test:
+  pytest
+
+run:
+  python engine.py

@@ -1,0 +1,117 @@
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+target-version = "py312"
+
+[tool.ruff.lint]
+preview = false
+# Ruff default settings
+# select = ["E4", "E7", "E9", "F"]
+# ignore = []
+
+# My rules: start strict and cherry pick what I don't care about
+select = ["ALL"]
+ignore = [
+  "ANN201", # return type in main
+  "ANN204", # missing-return-type-special-method
+  "D107",   # undocumented-public-init
+  "D203",   # incorrect blank line before class
+  "D212",   # multi-line-summary-first-line
+  "DOC201", # return not documented in docstring
+  "S101",   # use of `assert`
+
+  "T201",
+  # maybe inappropriate for solo dev environment
+  "TD002",  # missing-todo-author
+  "TD003",  # missing-todo-link
+
+  # preview, but still showing up w/Ruff LSP
+  "CPY001", # file docstring missing copyright notice
+  "S404",   # suspicious-subprocess-import
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [ "D104" ]
+"test_*.py" = [
+  "ANN001",   # type annotations for function fixtures
+  "ANN201",   # return type annotations
+  "ARG001",   # unused function arg (probably a setup fixture)
+  "D101",     # docstrings in public classes
+  "D102",     # public method docstrings
+  "D103",     # docstrings in public functions
+  "D203",     # incorrect blank line before class
+  "DOC201",   # return not documented in docstring
+  "PD901",    # generic name "df" - I'm okay with it in tests
+  "PLR6301",  # no self use
+  "PT006",    # fixture argument types
+  "PT011",    # for pytest.raises pattern
+  "S101",     # use of assert
+  "S311",     # non-cryptographic pseudorandom
+  "T201",     # print
+]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = false
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
