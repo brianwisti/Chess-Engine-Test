@@ -1,3 +1,4 @@
+"""Implements the bitboard algorithm for determining chess moves."""
 
 import time
 #import warnings
@@ -5,6 +6,8 @@ import time
 #warnings.filterwarnings("ignore", category=RuntimeWarning, message="overflow encountered in scalar multiply")
 
 #region Constants
+
+DEFAULT_DEPTH = 6
 
 WP = 0
 WN = 1
@@ -3429,14 +3432,25 @@ def RunPerftInline(depth: int): #{
 	timestamp_end = current_milli_time();
 	elapsed = timestamp_end - timestamp_start
 
-	print(f"Nodes: {nodes}");
-	print(f"Elapsed time: {elapsed}");
 #}
 
 
-SetStartingPosition();
-PrintBoard();
 
-RunPerftInline(6);
-#RunPerftInlineStruct(6);
-input();
+
+def main():
+    """Time the implementation."""
+    depth = DEFAULT_DEPTH
+    SetStartingPosition();
+    PrintBoard();
+
+    timestamp_start = current_milli_time();
+    nodes: int = PerftInline(depth, 0)
+
+    timestamp_end = current_milli_time();
+    elapsed = timestamp_end - timestamp_start
+    print(f"Nodes: {nodes}")
+    print(f"Elapsed time: {elapsed}")
+
+
+if __name__ == "__main__":
+    main()
