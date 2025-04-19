@@ -1,6 +1,14 @@
 """Check that I haven't messed up the original implementation."""
 
-from engine import DEFAULT_DEPTH, perft_inline, set_starting_position
+import pytest
+
+from engine import DEFAULT_DEPTH, NO_SQUARE, Board, perft_inline, set_starting_position
+
+
+@pytest.fixture
+def board():
+    return Board()
+
 
 EXPECTED_OUTPUT = """b1a3: 4856835
 b1c3: 5708064
@@ -25,13 +33,20 @@ h2h4: 5385554
 """
 
 
+class TestBoard:
+    def test_clear_ep(self, board):
+        board.ep = 1
+        board.clear_ep()
+        assert board.ep == NO_SQUARE
+
+
 def test_perft_inline(capsys):
     initial_ply = 0
     depth = DEFAULT_DEPTH
     expected_node_count = 119_060_324
-    set_starting_position()
+    board = set_starting_position()
 
-    node_count = perft_inline(depth, initial_ply)
+    node_count = perft_inline(board, depth, initial_ply)
     assert node_count == expected_node_count
 
     captured = capsys.readouterr()

@@ -2,6 +2,7 @@
 
 import copy
 import time
+from dataclasses import dataclass
 
 # Program Constants {{{
 
@@ -97,10 +98,10 @@ TAG_WCASTLEKS = 4
 TAG_WCASTLEQS = 5
 TAG_BCASTLEKS = 6
 TAG_BCASTLEQS = 7
-TAG_BKnightPromotion = 8
-TAG_BBishopPromotion = 9
-TAG_BQueenPromotion = 10
-TAG_BRookPromotion = 11
+TAG_BKNIGHT_PROMOTION = 8
+TAG_BBISHOP_PROMOTION = 9
+TAG_BQUEEN_PROMOTION = 10
+TAG_BROOK_PROMOTION = 11
 TAG_WKnightPromotion = 12
 TAG_WBishopPromotion = 13
 TAG_WQueenPromotion = 14
@@ -5259,7 +5260,6 @@ EMPTY_BITBOARD = 0
 # }}}  noqa: ERA001
 
 PIECE_ARRAY = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-WHITE_TO_PLAY = True
 CASTLE_RIGHTS = [True, True, True, True]
 ep: int = NO_SQUARE
 BOARD_PLY: int = 0
@@ -5502,7 +5502,7 @@ def print_move_no_nl(starting: int, target_square: int, tag: int) -> None:
 
     if tag in (
         TAG_BCaptureKnightPromotion,
-        TAG_BKnightPromotion,
+        TAG_BKNIGHT_PROMOTION,
         TAG_WKnightPromotion,
         TAG_WCaptureKnightPromotion,
     ):
@@ -5510,7 +5510,7 @@ def print_move_no_nl(starting: int, target_square: int, tag: int) -> None:
 
     elif tag in (
         TAG_BCaptureRookPromotion,
-        TAG_BRookPromotion,
+        TAG_BROOK_PROMOTION,
         TAG_WRookPromotion,
         TAG_WCaptureRookPromotion,
     ):
@@ -5518,7 +5518,7 @@ def print_move_no_nl(starting: int, target_square: int, tag: int) -> None:
 
     elif tag in (
         TAG_BCaptureBishopPromotion,
-        TAG_BBishopPromotion,
+        TAG_BBISHOP_PROMOTION,
         TAG_WBishopPromotion,
         TAG_WCaptureBishopPromotion,
     ):
@@ -5526,7 +5526,7 @@ def print_move_no_nl(starting: int, target_square: int, tag: int) -> None:
 
     elif tag in (
         TAG_BCaptureQueenPromotion,
-        TAG_BQueenPromotion,
+        TAG_BQUEEN_PROMOTION,
         TAG_WQueenPromotion,
         TAG_WCaptureQueenPromotion,
     ):
@@ -5701,13 +5701,20 @@ def bitscan_forward(temp_bitboard: int) -> int:
     return -1
 
 
-def set_starting_position() -> None:
-    """Set up board based on predefined layout."""
-    global ep
-    global WHITE_TO_PLAY
+@dataclass
+class Board:
+    """Holds persistent state details about the chessboard."""
 
-    ep = NO_SQUARE
-    WHITE_TO_PLAY = True
+    ep: int = NO_SQUARE
+    white_to_play: bool = True
+
+    def clear_ep(self) -> None:
+        """Reset the ep."""
+        self.ep = NO_SQUARE
+
+
+def set_starting_position() -> Board:
+    """Set up board based on predefined layout."""
     CASTLE_RIGHTS[0] = True
     CASTLE_RIGHTS[1] = True
     CASTLE_RIGHTS[2] = True
@@ -5725,6 +5732,8 @@ def set_starting_position() -> None:
     PIECE_ARRAY[BQ] = BQ_STARTING_POSITION
     PIECE_ARRAY[BK] = BK_STARTING_POSITION
 
+    return Board()
+
 
 def is_occupied(bitboard: int, square: int) -> bool:
     """Return True if any piece occupies bitboard at square."""
@@ -5740,7 +5749,7 @@ def get_occupied_index(square: int) -> int:
     return EMPTY
 
 
-def print_board() -> None:
+def print_board(board: Board) -> None:
     """Display the current state of the board."""
     print("Board:")
     board_array = [get_occupied_index(i) for i in range(BITBOARD_AREA)]
@@ -5760,7 +5769,7 @@ def print_board() -> None:
 
     print()
 
-    print(f"White to play: {WHITE_TO_PLAY}")
+    print(f"White to play: {board.white_to_play}")
 
     print(
         f"Castle: {CASTLE_RIGHTS[0]} {CASTLE_RIGHTS[1]} "
@@ -5772,11 +5781,8 @@ def print_board() -> None:
     print()
 
 
-def perft_inline(depth: int, ply: int) -> int:
+def perft_inline(board: Board, depth: int, ply: int) -> int:
     """Evaluate available moves up to depth."""
-    global WHITE_TO_PLAY
-    global ep
-
     piece_array_local = copy.copy(PIECE_ARRAY)
     move_list = [[0] * 4 for _ in range(50)]
     move_count = 0
@@ -5814,7 +5820,7 @@ def perft_inline(depth: int, ply: int) -> int:
     pin_number = 0
 
     # Generate Moves
-    if WHITE_TO_PLAY:
+    if board.white_to_play:
         white_king_check_count = 0
         white_king_position = bitscan_forward(piece_array_local[WK])
 
@@ -6304,10 +6310,10 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 if (
                     (SQUARE_BBS[starting_square] & RANK_5_BITBOARD)
-                    and ep != NO_SQUARE
+                    and board.ep != NO_SQUARE
                     and (
                         WHITE_PAWN_ATTACKS[starting_square]
-                        & SQUARE_BBS[ep]
+                        & SQUARE_BBS[board.ep]
                         & check_bit_board
                         & temp_pin_bitboard
                     )
@@ -6317,7 +6323,7 @@ def perft_inline(depth: int, ply: int) -> int:
                         and not (piece_array_local[BQ] & RANK_5_BITBOARD)
                     ):  # { #if no king on rank 5
                         move_list[move_count][MOVE_STARTING] = starting_square
-                        move_list[move_count][MOVE_TARGET] = ep
+                        move_list[move_count][MOVE_TARGET] = board.ep
                         move_list[move_count][MOVE_TAG] = TAG_WHITEEP
                         move_list[move_count][MOVE_PIECE] = WP
                         move_count += 1
@@ -6326,7 +6332,7 @@ def perft_inline(depth: int, ply: int) -> int:
                         occupancy_without_ep_pawns = (
                             combined_occupancies & ~SQUARE_BBS[starting_square]
                         )
-                        occupancy_without_ep_pawns &= ~SQUARE_BBS[ep + 8]
+                        occupancy_without_ep_pawns &= ~SQUARE_BBS[board.ep + 8]
 
                         rook_attacks_from_king = get_rook_moves_separate(
                             white_king_position,
@@ -6337,7 +6343,7 @@ def perft_inline(depth: int, ply: int) -> int:
                             rook_attacks_from_king & piece_array_local[BR]
                         ) and not (rook_attacks_from_king & piece_array_local[BQ]):
                             move_list[move_count][MOVE_STARTING] = starting_square
-                            move_list[move_count][MOVE_TARGET] = ep
+                            move_list[move_count][MOVE_TARGET] = board.ep
                             move_list[move_count][MOVE_TAG] = TAG_WHITEEP
                             move_list[move_count][MOVE_PIECE] = WP
                             move_count += 1
@@ -6710,25 +6716,25 @@ def perft_inline(depth: int, ply: int) -> int:
                         ):  # { #if promotion
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = starting_square + 8
-                            move_list[move_count][MOVE_TAG] = TAG_BBishopPromotion
+                            move_list[move_count][MOVE_TAG] = TAG_BBISHOP_PROMOTION
                             move_list[move_count][MOVE_PIECE] = BP
                             move_count += 1
 
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = starting_square + 8
-                            move_list[move_count][MOVE_TAG] = TAG_BKnightPromotion
+                            move_list[move_count][MOVE_TAG] = TAG_BKNIGHT_PROMOTION
                             move_list[move_count][MOVE_PIECE] = BP
                             move_count += 1
 
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = starting_square + 8
-                            move_list[move_count][MOVE_TAG] = TAG_BRookPromotion
+                            move_list[move_count][MOVE_TAG] = TAG_BROOK_PROMOTION
                             move_list[move_count][MOVE_PIECE] = BP
                             move_count += 1
 
                             move_list[move_count][MOVE_STARTING] = starting_square
                             move_list[move_count][MOVE_TARGET] = starting_square + 8
-                            move_list[move_count][MOVE_TAG] = TAG_BQueenPromotion
+                            move_list[move_count][MOVE_TAG] = TAG_BQUEEN_PROMOTION
                             move_list[move_count][MOVE_PIECE] = BP
                             move_count += 1
 
@@ -6798,10 +6804,10 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 if (
                     (SQUARE_BBS[starting_square] & RANK_4_BITBOARD)
-                    and ep != NO_SQUARE
+                    and board.ep != NO_SQUARE
                     and (
                         (
-                            (BLACK_PAWN_ATTACKS[starting_square] & SQUARE_BBS[ep])
+                            (BLACK_PAWN_ATTACKS[starting_square] & SQUARE_BBS[board.ep])
                             & check_bit_board
                         )
                         & temp_pin_bitboard
@@ -6812,7 +6818,7 @@ def perft_inline(depth: int, ply: int) -> int:
                         and not (piece_array_local[WQ] & RANK_4_BITBOARD)
                     ):  # { #if no king on rank 5
                         move_list[move_count][MOVE_STARTING] = starting_square
-                        move_list[move_count][MOVE_TARGET] = int(ep)
+                        move_list[move_count][MOVE_TARGET] = board.ep
                         move_list[move_count][MOVE_TAG] = TAG_BLACKEP
                         move_list[move_count][MOVE_PIECE] = BP
                         move_count += 1
@@ -6821,7 +6827,7 @@ def perft_inline(depth: int, ply: int) -> int:
                         occupancy_without_ep_pawns = (
                             combined_occupancies & ~SQUARE_BBS[starting_square]
                         )
-                        occupancy_without_ep_pawns &= ~SQUARE_BBS[ep - 8]
+                        occupancy_without_ep_pawns &= ~SQUARE_BBS[board.ep - 8]
 
                         rook_attacks_from_king = get_rook_moves_separate(
                             black_king_position,
@@ -6832,7 +6838,7 @@ def perft_inline(depth: int, ply: int) -> int:
                             rook_attacks_from_king & piece_array_local[WR]
                         ) and not (rook_attacks_from_king & piece_array_local[WQ]):
                             move_list[move_count][MOVE_STARTING] = starting_square
-                            move_list[move_count][MOVE_TARGET] = int(ep)
+                            move_list[move_count][MOVE_TARGET] = board.ep
                             move_list[move_count][MOVE_TAG] = TAG_BLACKEP
                             move_list[move_count][MOVE_PIECE] = BP
                             move_count += 1
@@ -7151,7 +7157,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
     nodes = 0
     prior_nodes: int
-    copy_ep = ep
+    copy_ep = board.ep
     copy_castle = [
         CASTLE_RIGHTS[0],
         CASTLE_RIGHTS[1],
@@ -7166,21 +7172,21 @@ def perft_inline(depth: int, ply: int) -> int:
         tag = move_list[move_index][MOVE_TAG]
 
         capture_index = -1
-
-        WHITE_TO_PLAY = not WHITE_TO_PLAY
+        board.white_to_play = not board.white_to_play
 
         match tag:
             case 0:  # none
                 PIECE_ARRAY[piece] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
             case 26:  # check
                 PIECE_ARRAY[piece] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
             case 1:  # capture
                 PIECE_ARRAY[piece] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
+
                 if piece >= WP and piece <= WK:
                     for i in range(BP, BK + 1):
                         if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
@@ -7197,7 +7203,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
                     PIECE_ARRAY[capture_index] &= ~SQUARE_BBS[target_square]
 
-                ep = NO_SQUARE
+                board.clear_ep()
             case 27:  # check cap
                 PIECE_ARRAY[piece] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
@@ -7209,7 +7215,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
                     PIECE_ARRAY[capture_index] &= ~SQUARE_BBS[target_square]
 
-                else:  # { #is black
+                else:  # is black
                     for i in range(WP, BP):
                         if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                             capture_index = i
@@ -7217,21 +7223,21 @@ def perft_inline(depth: int, ply: int) -> int:
 
                     PIECE_ARRAY[capture_index] &= ~SQUARE_BBS[target_square]
 
-                ep = NO_SQUARE
+                board.clear_ep()
             case 2:  # white ep
                 # move piece
                 PIECE_ARRAY[WP] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[WP] &= ~SQUARE_BBS[starting_square]
                 # remove
                 PIECE_ARRAY[BP] &= ~SQUARE_BBS[target_square + 8]
-                ep = NO_SQUARE
+                board.clear_ep()
             case 3:  # black ep
                 # move piece
                 PIECE_ARRAY[BP] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[BP] &= ~SQUARE_BBS[starting_square]
                 # remove white pawn square up
                 PIECE_ARRAY[WP] &= ~SQUARE_BBS[target_square - 8]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 4:  # WKS
                 # white king
@@ -7243,7 +7249,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 # occupancies
                 CASTLE_RIGHTS[WKS_CASTLE_RIGHTS] = False
                 CASTLE_RIGHTS[WQS_CASTLE_RIGHTS] = False
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 5:  # WQS
                 # white king
@@ -7255,7 +7261,7 @@ def perft_inline(depth: int, ply: int) -> int:
 
                 CASTLE_RIGHTS[WKS_CASTLE_RIGHTS] = False
                 CASTLE_RIGHTS[WQS_CASTLE_RIGHTS] = False
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 6:  # BKS
                 # white king
@@ -7266,7 +7272,7 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[BR] &= ~SQUARE_BBS[H8]
                 CASTLE_RIGHTS[BKS_CASTLE_RIGHTS] = False
                 CASTLE_RIGHTS[BQS_CASTLE_RIGHTS] = False
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 7:  # BQS
                 # white king
@@ -7277,52 +7283,53 @@ def perft_inline(depth: int, ply: int) -> int:
                 PIECE_ARRAY[BR] &= ~SQUARE_BBS[A8]
                 CASTLE_RIGHTS[BKS_CASTLE_RIGHTS] = False
                 CASTLE_RIGHTS[BQS_CASTLE_RIGHTS] = False
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 8:  # BNPr
                 PIECE_ARRAY[BN] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 9:  # BBPr
                 PIECE_ARRAY[BB] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 10:  # BQPr
                 PIECE_ARRAY[BQ] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 11:  # BRPr
                 PIECE_ARRAY[BR] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 12:  # WNPr
                 PIECE_ARRAY[WN] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 13:  # WBPr
                 PIECE_ARRAY[WB] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 14:  # WQPr
                 PIECE_ARRAY[WQ] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 15:  # WRPr
                 PIECE_ARRAY[WR] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
 
             case 16:  # BNPrCAP
                 PIECE_ARRAY[BN] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(WP, BP):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7333,8 +7340,8 @@ def perft_inline(depth: int, ply: int) -> int:
             case 17:  # BBPrCAP
                 PIECE_ARRAY[BB] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
+                board.clear_ep()
 
-                ep = NO_SQUARE
                 for i in range(WP, BP):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7345,7 +7352,8 @@ def perft_inline(depth: int, ply: int) -> int:
             case 18:  # BQPrCAP
                 PIECE_ARRAY[BQ] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(WP, BP):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7356,7 +7364,8 @@ def perft_inline(depth: int, ply: int) -> int:
             case 19:  # BRPrCAP
                 PIECE_ARRAY[BR] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(WP, BP):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7367,7 +7376,8 @@ def perft_inline(depth: int, ply: int) -> int:
             case 20:  # WNPrCAP
                 PIECE_ARRAY[WN] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(BP, BK + 1):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7378,7 +7388,8 @@ def perft_inline(depth: int, ply: int) -> int:
             case 21:  # WBPrCAP
                 PIECE_ARRAY[WB] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(BP, BK + 1):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7389,7 +7400,8 @@ def perft_inline(depth: int, ply: int) -> int:
             case 22:  # WQPrCAP
                 PIECE_ARRAY[WQ] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(BP, BK + 1):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
@@ -7400,22 +7412,24 @@ def perft_inline(depth: int, ply: int) -> int:
             case 23:  # WRPrCAP
                 PIECE_ARRAY[WR] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[piece] &= ~SQUARE_BBS[starting_square]
-                ep = NO_SQUARE
+                board.clear_ep()
+
                 for i in range(BP, BK + 1):
                     if PIECE_ARRAY[i] & SQUARE_BBS[target_square]:
                         capture_index = i
                         break
+
                 PIECE_ARRAY[capture_index] &= ~SQUARE_BBS[target_square]
 
             case 24:  # WDouble
                 PIECE_ARRAY[WP] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[WP] &= ~SQUARE_BBS[starting_square]
-                ep = target_square + 8
+                board.ep = target_square + 8
 
             case 25:  # BDouble
                 PIECE_ARRAY[BP] |= SQUARE_BBS[target_square]
                 PIECE_ARRAY[BP] &= ~SQUARE_BBS[starting_square]
-                ep = target_square - 8
+                board.ep = target_square - 8
         if piece == WK:
             CASTLE_RIGHTS[WKS_CASTLE_RIGHTS] = False
             CASTLE_RIGHTS[WQS_CASTLE_RIGHTS] = False
@@ -7444,8 +7458,8 @@ def perft_inline(depth: int, ply: int) -> int:
                 CASTLE_RIGHTS[BQS_CASTLE_RIGHTS] = False
 
         prior_nodes = nodes
-        nodes += perft_inline(depth - 1, ply + 1)
-        WHITE_TO_PLAY = not WHITE_TO_PLAY
+        nodes += perft_inline(board, depth - 1, ply + 1)
+        board.white_to_play = not board.white_to_play
 
         match tag:
             case 0:  # none
@@ -7596,7 +7610,7 @@ def perft_inline(depth: int, ply: int) -> int:
         CASTLE_RIGHTS[1] = copy_castle[1]
         CASTLE_RIGHTS[2] = copy_castle[2]
         CASTLE_RIGHTS[3] = copy_castle[3]
-        ep = copy_ep
+        board.ep = copy_ep
 
         if not ply:
             print_move_no_nl(
@@ -7617,11 +7631,11 @@ def current_milli_time() -> float:
 def main() -> None:
     """Time the implementation."""
     depth = DEFAULT_DEPTH
-    set_starting_position()
-    print_board()
+    board = set_starting_position()
+    print_board(board)
 
     timestamp_start = current_milli_time()
-    nodes: int = perft_inline(depth, 0)
+    nodes: int = perft_inline(board, depth, 0)
 
     timestamp_end = current_milli_time()
     elapsed = timestamp_end - timestamp_start

@@ -1,8 +1,18 @@
 check:
-  ruff check .
+  uv run ruff check .
 
-test:
-  pytest
+format:
+  uv run ruff format .
+
+profile:
+  uv run pypy -m cProfile engine.py
 
 run:
-  python engine.py
+  uv run pypy engine.py
+
+test:
+  uv run pytest
+
+types:
+  uv run mypy engine.py
+
