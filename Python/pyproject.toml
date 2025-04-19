@@ -52,7 +52,6 @@ ignore = [
   "DOC201", # return not documented in docstring
   "S101",   # use of `assert`
 
-  "T201",
   # maybe inappropriate for solo dev environment
   "TD002",  # missing-todo-author
   "TD003",  # missing-todo-link
@@ -60,6 +59,14 @@ ignore = [
   # preview, but still showing up w/Ruff LSP
   "CPY001", # file docstring missing copyright notice
   "S404",   # suspicious-subprocess-import
+
+  # Ignore these while working out the rest of the problems in this code
+  "C901",     # complex-structure
+  "PLR0911",  # too-many-return-statements
+  "PLR0912",  # too-many-branches
+  "PLR0915",  # too-many-statements
+  "PLW0603",  # global-statement
+  "T201",     # print
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

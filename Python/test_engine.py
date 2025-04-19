@@ -1,6 +1,6 @@
 """Check that I haven't messed up the original implementation."""
 
-from engine import DEFAULT_DEPTH, PerftInline, SetStartingPosition
+from engine import DEFAULT_DEPTH, perft_inline, set_starting_position
 
 EXPECTED_OUTPUT = """b1a3: 4856835
 b1c3: 5708064
@@ -29,9 +29,9 @@ def test_perft_inline(capsys):
     initial_ply = 0
     depth = DEFAULT_DEPTH
     expected_node_count = 119_060_324
-    SetStartingPosition()
+    set_starting_position()
 
-    node_count = PerftInline(depth, initial_ply)
+    node_count = perft_inline(depth, initial_ply)
     assert node_count == expected_node_count
 
     captured = capsys.readouterr()
