@@ -73,9 +73,9 @@ func FillBoardArray() []int {
 	return boardArray[:]
 }
 
-func IsBoardArraySame(copy [12]uint64) bool {
+func IsBoardArraySame(boardCopy [12]uint64) bool {
 	for i := range 12 {
-		if PieceArray[i] != copy[i] {
+		if PieceArray[i] != boardCopy[i] {
 			fmt.Printf("ERROR piece not same: %d\n", i)
 
 			return false

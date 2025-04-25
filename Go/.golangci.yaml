@@ -18,6 +18,5 @@ linters:
     - mnd               # magic numbers
     - nestif            # deeply nested if statements
     - nlreturn          # newline before return and branch statements
-    - predeclared       # code that shadows Go predeclared identifier
     - revive            # drop-in replacement for golint
     - varnamelen        # variable name length for its scope
