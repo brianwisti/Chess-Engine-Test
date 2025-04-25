@@ -35,10 +35,10 @@ const (
 func LoadFen(fen string) {
 	ResetBoard()
 
-	var bracketCount int = 0
-	var squareCount int = 0
+	var bracketCount = 0
+	var squareCount = 0
 
-	var setting int = Pieces
+	var setting = Pieces
 
 	var ep_file_index = -1
 	var ep_rank_index = -1
