@@ -27,8 +27,6 @@ func PrintMoveNoNL(starting int, target_square int, tag int) { //starting
 			fmt.Printf("b")
 		case TAG_BCaptureQueenPromotion, TAG_BQueenPromotion, TAG_WQueenPromotion, TAG_WCaptureQueenPromotion:
 			fmt.Printf("q")
-		default:
-			fmt.Printf("X")
 	}
 
 }

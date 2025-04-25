@@ -1246,7 +1246,7 @@ func PerftInline(depth int, ply int) uint64 {
 	}
 
 	var nodes uint64 = 0
-	//var priorNodes uint64
+	var priorNodes uint64
 	var copyEp = ep
 	var copyCastle [4]bool
 	copyCastle[0] = CastleRights[0]
@@ -1588,7 +1588,7 @@ func PerftInline(depth int, ply int) uint64 {
 			}
 		}
 
-		//priorNodes = nodes
+		priorNodes = nodes
 		nodes += PerftInline(depth-1, ply+1)
 
 		whiteToPlay = !whiteToPlay
@@ -1750,10 +1750,10 @@ func PerftInline(depth int, ply int) uint64 {
 		CastleRights[3] = copyCastle[3]
 		ep = copyEp
 
-		//if ply == 0 {
-		//	PrintMoveNoNL(moveList[moveIndex][MOVE_STARTING], moveList[moveIndex][MOVE_TARGET], moveList[moveIndex][MOVE_TAG])
-		//fmt.Printf(": %d\n", nodes-priorNodes)
-		//}
+		if ply == 0 {
+			PrintMoveNoNL(moveList[moveIndex][MOVE_STARTING], moveList[moveIndex][MOVE_TARGET], moveList[moveIndex][MOVE_TAG])
+			fmt.Printf(": %d\n", nodes-priorNodes)
+		}
 	}
 
 	return nodes
@@ -1761,12 +1761,12 @@ func PerftInline(depth int, ply int) uint64 {
 
 func RunPerftInline(depth int) {
 
+	fmt.Println("-----")
 	timestamp_start := time.Now()
-
 	var nodes = PerftInline(depth, 0)
-
 	elapsed := time.Since(timestamp_start)
 
+	fmt.Println("-----")
 	fmt.Printf("Nodes: %d\n", nodes)
 	fmt.Printf("Elapsed time: %s\n", elapsed)
 }

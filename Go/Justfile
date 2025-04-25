@@ -1,0 +1,11 @@
+test:
+  prove
+
+run:
+  go run .
+
+lint:
+  golangci-lint run
+
+tidy:
+  go mod tidy
