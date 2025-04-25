@@ -65,6 +65,7 @@ func LoadFen(fen string) {
 func Load_Fen_Sort_Pieces(bracketCount *int, character_in_fen byte, setting *int, squareCount *int) {
 	if *bracketCount == 7 && character_in_fen == ' ' {
 		*setting++
+
 		return
 	}
 
@@ -182,54 +183,70 @@ func Load_Fen_Sort_EP(setting *int, character_in_fen byte, file_index *int, rank
 	switch character_in_fen {
 	case 'a':
 		*file_index = 0
+
 		return
 	case 'b':
 		*file_index = 1
+
 		return
 	case 'c':
 		*file_index = 2
+
 		return
 	case 'd':
 		*file_index = 3
+
 		return
 	case 'e':
 		*file_index = 4
+
 		return
 	case 'f':
 		*file_index = 5
+
 		return
 	case 'g':
 		*file_index = 6
+
 		return
 	case 'h':
 		*file_index = 7
+
 		return
 	}
 
 	switch character_in_fen {
 	case '1':
 		*rank_index = 7
+
 		return
 	case '2':
 		*rank_index = 6
+
 		return
 	case '3':
 		*rank_index = 5
+
 		return
 	case '4':
 		*rank_index = 4
+
 		return
 	case '5':
 		*rank_index = 3
+
 		return
 	case '6':
 		*rank_index = 2
+
 		return
 	case '7':
 		*rank_index = 1
+
 		return
 	case '8':
 		*rank_index = 0
+
 		return
 	}
 }
@@ -239,6 +256,7 @@ func Convert_to_64(file int, rank int) int {
 func Load_Fen_Sort_Fifty_Move(setting *int, character_in_fen byte) {
 	if character_in_fen == ' ' {
 		*setting++
+
 		return
 	}
 }

@@ -1245,6 +1245,7 @@ func PerftInline(depth int, ply int) uint64 {
 				for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 						captureIndex = i
+
 						break
 					}
 				}
@@ -1254,6 +1255,7 @@ func PerftInline(depth int, ply int) uint64 {
 				for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 						captureIndex = i
+
 						break
 					}
 				}
@@ -1270,6 +1272,7 @@ func PerftInline(depth int, ply int) uint64 {
 				for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 						captureIndex = i
+
 						break
 					}
 				}
@@ -1279,6 +1282,7 @@ func PerftInline(depth int, ply int) uint64 {
 				for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 						captureIndex = i
+
 						break
 					}
 				}
@@ -1396,6 +1400,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1411,6 +1416,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1425,6 +1431,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1439,6 +1446,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1453,6 +1461,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1467,6 +1476,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1481,6 +1491,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}
@@ -1495,6 +1506,7 @@ func PerftInline(depth int, ply int) uint64 {
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
 					captureIndex = i
+
 					break
 				}
 			}

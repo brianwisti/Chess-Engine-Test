@@ -91,6 +91,7 @@ func PrintBitboard(bitboard uint64) {
 			var square = (rank * 8) + file
 			if (bitboard & (ONE_U64 << square)) != 0 {
 				fmt.Print("X ")
+
 				continue
 			}
 
