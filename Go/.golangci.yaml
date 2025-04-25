@@ -21,4 +21,3 @@ linters:
     - predeclared       # code that shadows Go predeclared identifier
     - revive            # drop-in replacement for golint
     - varnamelen        # variable name length for its scope
-    - whitespace        # unnecessary newlines
