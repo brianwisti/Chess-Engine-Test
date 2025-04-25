@@ -14,7 +14,6 @@ linters:
     - gosec             # security problems
     - lll               # long lines
     - maintidx          # maintainability index
-    - misspell          # commonly misspelled english words
     - mnd               # magic numbers
     - nestif            # deeply nested if statements
     - revive            # drop-in replacement for golint

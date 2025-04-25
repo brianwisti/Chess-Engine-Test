@@ -87,10 +87,10 @@ func PerftInline(depth int, ply int) uint64 {
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 
-			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square]
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -111,10 +111,10 @@ func PerftInline(depth int, ply int) uint64 {
 		tempBitboard = PieceArray[BQ] & bishopAttacksChecks
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square]
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -137,10 +137,10 @@ func PerftInline(depth int, ply int) uint64 {
 
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square]
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -162,10 +162,10 @@ func PerftInline(depth int, ply int) uint64 {
 
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][piece_square]
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -330,7 +330,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -372,7 +372,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -510,7 +510,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -552,7 +552,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -594,7 +594,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -657,10 +657,10 @@ func PerftInline(depth int, ply int) uint64 {
 
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -681,10 +681,10 @@ func PerftInline(depth int, ply int) uint64 {
 		tempBitboard = PieceArray[WQ] & bishopAttacksChecks
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -707,10 +707,10 @@ func PerftInline(depth int, ply int) uint64 {
 
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -731,10 +731,10 @@ func PerftInline(depth int, ply int) uint64 {
 		tempBitboard = PieceArray[WQ] & rook_attacks
 		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
-			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
+			tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
+				checkBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
@@ -859,7 +859,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -998,7 +998,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -1040,7 +1040,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -1082,7 +1082,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
@@ -1124,7 +1124,7 @@ func PerftInline(depth int, ply int) uint64 {
 				if pinNumber != 0 {
 					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
+							tempPinBitboard = IN_BETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
