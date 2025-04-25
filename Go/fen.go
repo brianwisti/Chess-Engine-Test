@@ -45,7 +45,7 @@ func LoadFen(fen string) {
 
 	var ep_rank_index = -1
 
-	for character_index := 0; character_index < len(fen); character_index++ {
+	for character_index := range len(fen) {
 		switch setting {
 		case Pieces:
 			Load_Fen_Sort_Pieces(&bracketCount, fen[character_index], &setting, &squareCount)

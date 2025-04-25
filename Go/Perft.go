@@ -328,7 +328,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -370,7 +370,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -508,7 +508,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -550,7 +550,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -592,7 +592,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -857,7 +857,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -996,7 +996,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -1038,7 +1038,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -1080,7 +1080,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -1122,7 +1122,7 @@ func PerftInline(depth int, ply int) uint64 {
 				tempPinBitboard = MAX_ULONG
 
 				if pinNumber != 0 {
-					for i := 0; i < pinNumber; i++ {
+					for i := range pinNumber {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -1215,7 +1215,7 @@ func PerftInline(depth int, ply int) uint64 {
 	copyCastle[2] = CastleRights[2]
 	copyCastle[3] = CastleRights[3]
 
-	for moveIndex := 0; moveIndex < int(moveCount); moveIndex++ {
+	for moveIndex := range moveCount {
 		var startingSquare = moveList[moveIndex][MOVE_STARTING]
 
 		var targetSquare = moveList[moveIndex][MOVE_TARGET]

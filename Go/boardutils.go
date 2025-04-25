@@ -5,7 +5,7 @@ func IsOccupied(bitboard uint64, square int) bool {
 }
 
 func GetOccupiedIndex(square int) int {
-	for i := 0; i < 12; i++ {
+	for i := range 12 {
 		if IsOccupied(PieceArray[i], square) {
 			return i
 		}

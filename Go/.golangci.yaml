@@ -1,5 +1,6 @@
 version: "2"
 linters:
+  default: all
   disable:
     # Re-enable and address one at a time.
     - cyclop            # cyclomatic complexity
@@ -11,7 +12,6 @@ linters:
     - gocritic          # bugs, performance, and style issues
     - gocyclo           # cyclomatic complexity
     - gosec             # security problems
-    - intrange          # for loops that could use integer ranges
     - lll               # long lines
     - maintidx          # maintainability index
     - misspell          # commonly misspelled english words
