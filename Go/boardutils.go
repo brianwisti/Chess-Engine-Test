@@ -10,16 +10,18 @@ func GetOccupiedIndex(square int) int {
 			return i
 		}
 	}
+
 	return EMPTY
 }
 
 func OutOfBounds(move int) bool {
-
 	if move < 0 {
 		return true
 	}
+
 	if move > 63 {
 		return true
 	}
+
 	return false
 }

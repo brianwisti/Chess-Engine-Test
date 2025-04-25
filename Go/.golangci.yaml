@@ -1,6 +1,5 @@
 version: "2"
 linters:
-  default: all
   disable:
     # Re-enable and address one at a time.
     - cyclop            # cyclomatic complexity
@@ -23,4 +22,3 @@ linters:
     - revive            # drop-in replacement for golint
     - varnamelen        # variable name length for its scope
     - whitespace        # unnecessary newlines
-    - wsl               # add or remove empty lines

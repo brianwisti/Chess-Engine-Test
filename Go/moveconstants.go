@@ -1210,16 +1210,16 @@ func PieceIsWhite(piece int) bool {
 			return true
 		}
 	}
+
 	return false
 }
+
 func PieceIsBlack(piece int) bool {
-
 	if piece >= BP {
-
 		if piece <= BK {
-
 			return true
 		}
 	}
+
 	return false
 }

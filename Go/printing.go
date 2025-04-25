@@ -3,13 +3,13 @@ package main
 import "fmt"
 
 func PrintMoveNoNL(starting int, target_square int, tag int) { //starting
-
 	if OutOfBounds(starting) {
 		fmt.Printf("%d", starting)
 	} else {
 		fmt.Printf("%c", SQ_CHAR_X[starting])
 		fmt.Printf("%c", SQ_CHAR_Y[starting])
 	}
+
 	//target
 	if OutOfBounds(target_square) {
 		fmt.Printf("%d", target_square)
@@ -28,5 +28,4 @@ func PrintMoveNoNL(starting int, target_square int, tag int) { //starting
 		case TAG_BCaptureQueenPromotion, TAG_BQueenPromotion, TAG_WQueenPromotion, TAG_WCaptureQueenPromotion:
 			fmt.Printf("q")
 	}
-
 }

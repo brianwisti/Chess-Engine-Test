@@ -6,12 +6,8 @@ import (
 )
 
 func PerftInline(depth int, ply int) uint64 {
-
-	//if depth == 0 {
-	//	return 1
-	//}
-
 	var moveList [50][4]int
+
 	var moveCount uint64 = 0
 
 	var WHITE_OCCUPANCIES = PieceArray[0] |
@@ -29,14 +25,23 @@ func PerftInline(depth int, ply int) uint64 {
 		PieceArray[11]
 
 	var COMBINED_OCCUPANCIES = WHITE_OCCUPANCIES | BLACK_OCCUPANCIES
+
 	var EMPTY_OCCUPANCIES = ^COMBINED_OCCUPANCIES
+
 	var tempBitboard uint64
+
 	var checkBitboard = EMPTY_BITBOARD
+
 	var tempPinBitboard uint64
+
 	var tempAttack uint64
+
 	var tempEmpty uint64
+
 	var tempCaptures uint64
+
 	var startingSquare int
+
 	var targetSquare int
 
 	var pinArray = [8][2]int{
@@ -49,18 +54,18 @@ func PerftInline(depth int, ply int) uint64 {
 		{-1, -1},
 		{-1, -1},
 	}
+
 	var pinNumber = 0
 
 	//Generate Moves
 	if whiteToPlay {
-
 		var whiteKingCheckCount = 0
+
 		var whiteKingPosition = BitscanForward(PieceArray[WK])
 
 		//pawns
 		tempBitboard = PieceArray[BP] & WHITE_PAWN_ATTACKS[whiteKingPosition]
 		if tempBitboard != 0 {
-
 			var pawn_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			checkBitboard = EMPTY_BITBOARD << pawn_square
 			whiteKingCheckCount++
@@ -69,8 +74,8 @@ func PerftInline(depth int, ply int) uint64 {
 		//knights
 		tempBitboard = PieceArray[BN] & KNIGHT_ATTACKS[whiteKingPosition]
 		if tempBitboard != 0 {
-
 			var knight_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
+
 			checkBitboard = SQUARE_BBS[knight_square]
 			whiteKingCheckCount++
 		}
@@ -78,35 +83,33 @@ func PerftInline(depth int, ply int) uint64 {
 		//bishops
 		var bishopAttacksChecks = GetBishopAttacksFast(whiteKingPosition, BLACK_OCCUPANCIES)
 		tempBitboard = PieceArray[BB] & bishopAttacksChecks
-		for tempBitboard != 0 {
 
+		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
+
 			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-
 				checkBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square]
 				whiteKingCheckCount++
-
 			} else {
-
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
-
 					pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square
 					pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		//queen
 		tempBitboard = PieceArray[BQ] & bishopAttacksChecks
 		for tempBitboard != 0 {
-
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
@@ -115,23 +118,24 @@ func PerftInline(depth int, ply int) uint64 {
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
-
 					pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square
 					pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		//rook
 		var rook_attacks = GetRookAttacksFast(whiteKingPosition, BLACK_OCCUPANCIES)
 		tempBitboard = PieceArray[BR] & rook_attacks
-		for tempBitboard != 0 {
 
+		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
@@ -140,6 +144,7 @@ func PerftInline(depth int, ply int) uint64 {
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
@@ -148,13 +153,14 @@ func PerftInline(depth int, ply int) uint64 {
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		//queen
 		tempBitboard = PieceArray[BQ] & rook_attacks
-		for tempBitboard != 0 {
 
+		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][piece_square] & WHITE_OCCUPANCIES
 
@@ -163,6 +169,7 @@ func PerftInline(depth int, ply int) uint64 {
 				whiteKingCheckCount++
 			} else {
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
@@ -171,12 +178,15 @@ func PerftInline(depth int, ply int) uint64 {
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		var occupanciesWithoutWhiteKing = COMBINED_OCCUPANCIES & (^PieceArray[WK])
+
 		tempAttack = KING_ATTACKS[whiteKingPosition]
 		tempEmpty = tempAttack & EMPTY_OCCUPANCIES
+
 		for tempEmpty != 0 {
 			targetSquare = BitscanForward(tempEmpty)
 			tempEmpty &= tempEmpty - 1
@@ -184,23 +194,31 @@ func PerftInline(depth int, ply int) uint64 {
 			if (PieceArray[BP] & WHITE_PAWN_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[BN] & KNIGHT_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[BK] & KING_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			var bishopAttacks = GetBishopAttacksFast(targetSquare, occupanciesWithoutWhiteKing)
+
 			if (PieceArray[BB] & bishopAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[BQ] & bishopAttacks) != 0 {
 				continue
 			}
+
 			var rookAttacks = GetRookAttacksFast(targetSquare, occupanciesWithoutWhiteKing)
+
 			if (PieceArray[BR] & rookAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[BQ] & rookAttacks) != 0 {
 				continue
 			}
@@ -221,23 +239,31 @@ func PerftInline(depth int, ply int) uint64 {
 			if (PieceArray[BP] & WHITE_PAWN_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[BN] & KNIGHT_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[BK] & KING_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			var bishopAttacks = GetBishopAttacksFast(targetSquare, occupanciesWithoutWhiteKing)
+
 			if (PieceArray[BB] & bishopAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[BQ] & bishopAttacks) != 0 {
 				continue
 			}
+
 			var rookAttacks = GetRookAttacksFast(targetSquare, occupanciesWithoutWhiteKing)
+
 			if (PieceArray[BR] & rookAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[BQ] & rookAttacks) != 0 {
 				continue
 			}
@@ -251,7 +277,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 		//If double check
 		if whiteKingCheckCount < 2 {
-
 			if whiteKingCheckCount == 0 {
 				checkBitboard = MAX_ULONG
 			}
@@ -297,17 +322,14 @@ func PerftInline(depth int, ply int) uint64 {
 			tempBitboard = PieceArray[WN]
 
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1 //removes the knight from that square to not infinitely loop
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -315,7 +337,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((KNIGHT_ATTACKS[startingSquare] & BLACK_OCCUPANCIES) & checkBitboard) & tempPinBitboard //gets knight captures
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -329,7 +350,6 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((KNIGHT_ATTACKS[startingSquare] & EMPTY_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -344,26 +364,22 @@ func PerftInline(depth int, ply int) uint64 {
 			tempBitboard = PieceArray[WP]
 
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
 					for i := 0; i < pinNumber; i++ {
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
 				}
 
 				if (SQUARE_BBS[startingSquare-8] & COMBINED_OCCUPANCIES) == 0 { //if up one square is empty
-
 					if ((SQUARE_BBS[startingSquare-8] & checkBitboard) & tempPinBitboard) != 0 {
-
 						if (SQUARE_BBS[startingSquare] & RANK_7_BITBOARD) != 0 { //if promotion
-
 							moveList[moveCount][MOVE_STARTING] = startingSquare
 							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
 							moveList[moveCount][MOVE_TAG] = TAG_WQueenPromotion
@@ -387,9 +403,7 @@ func PerftInline(depth int, ply int) uint64 {
 							moveList[moveCount][MOVE_TAG] = TAG_WKnightPromotion
 							moveList[moveCount][MOVE_PIECE] = WP
 							moveCount++
-
 						} else {
-
 							moveList[moveCount][MOVE_STARTING] = startingSquare
 							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
 							moveList[moveCount][MOVE_TAG] = TAG_NONE
@@ -399,11 +413,8 @@ func PerftInline(depth int, ply int) uint64 {
 					}
 
 					if (SQUARE_BBS[startingSquare] & RANK_2_BITBOARD) != 0 { //if on rank 2
-
 						if ((SQUARE_BBS[startingSquare-16] & checkBitboard) & tempPinBitboard) != 0 { //if not pinned or
-
 							if ((SQUARE_BBS[startingSquare-16]) & COMBINED_OCCUPANCIES) == 0 { //if up two squares and one square are empty
-
 								moveList[moveCount][MOVE_STARTING] = startingSquare
 								moveList[moveCount][MOVE_TARGET] = startingSquare - 16
 								moveList[moveCount][MOVE_TAG] = TAG_DoublePawnWhite
@@ -417,12 +428,10 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((WHITE_PAWN_ATTACKS[startingSquare] & BLACK_OCCUPANCIES) & checkBitboard) & tempPinBitboard //if black piece diagonal to pawn
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
 					if (SQUARE_BBS[startingSquare] & RANK_7_BITBOARD) != 0 { //if promotion
-
 						moveList[moveCount][MOVE_STARTING] = startingSquare
 						moveList[moveCount][MOVE_TARGET] = targetSquare
 						moveList[moveCount][MOVE_TAG] = TAG_WCaptureQueenPromotion
@@ -447,7 +456,6 @@ func PerftInline(depth int, ply int) uint64 {
 						moveList[moveCount][MOVE_PIECE] = WP
 						moveCount++
 					} else {
-
 						moveList[moveCount][MOVE_STARTING] = startingSquare
 						moveList[moveCount][MOVE_TARGET] = targetSquare
 						moveList[moveCount][MOVE_TAG] = TAG_CAPTURE
@@ -457,36 +465,28 @@ func PerftInline(depth int, ply int) uint64 {
 				}
 
 				if (SQUARE_BBS[startingSquare] & RANK_5_BITBOARD) != 0 { //check rank for ep
-
 					if ep != NO_SQUARE {
-
 						if (((WHITE_PAWN_ATTACKS[startingSquare] & SQUARE_BBS[ep]) & checkBitboard) & tempPinBitboard) != 0 {
-
 							if (PieceArray[WK] & RANK_5_BITBOARD) == 0 { //if no king on rank 5
-
 								moveList[moveCount][MOVE_STARTING] = startingSquare
 								moveList[moveCount][MOVE_TARGET] = int(ep)
 								moveList[moveCount][MOVE_TAG] = TAG_WHITEEP
 								moveList[moveCount][MOVE_PIECE] = WP
 								moveCount++
 							} else if (PieceArray[BR]&RANK_5_BITBOARD) == 0 && (PieceArray[BQ]&RANK_5_BITBOARD) == 0 { // if no b rook or queen on rank 5
-
 								moveList[moveCount][MOVE_STARTING] = startingSquare
 								moveList[moveCount][MOVE_TARGET] = int(ep)
 								moveList[moveCount][MOVE_TAG] = TAG_WHITEEP
 								moveList[moveCount][MOVE_PIECE] = WP
 								moveCount++
 							} else { //wk and br or bq on rank 5
-
 								var occupancyWithoutEPPawns = COMBINED_OCCUPANCIES & ^SQUARE_BBS[startingSquare]
 								occupancyWithoutEPPawns &= ^SQUARE_BBS[ep+8]
 
 								var rookAttacksFromKing = GetRookAttacksFast(whiteKingPosition, occupancyWithoutEPPawns)
 
 								if (rookAttacksFromKing & PieceArray[BR]) == 0 {
-
 									if (rookAttacksFromKing & PieceArray[BQ]) == 0 {
-
 										moveList[moveCount][MOVE_STARTING] = startingSquare
 										moveList[moveCount][MOVE_TARGET] = int(ep)
 										moveList[moveCount][MOVE_TAG] = TAG_WHITEEP
@@ -502,17 +502,14 @@ func PerftInline(depth int, ply int) uint64 {
 
 			tempBitboard = PieceArray[WR]
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -522,7 +519,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((rookAttacks & BLACK_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -535,7 +531,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((rookAttacks & EMPTY_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -549,17 +544,14 @@ func PerftInline(depth int, ply int) uint64 {
 
 			tempBitboard = PieceArray[WB]
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -569,7 +561,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((bishopAttacks & BLACK_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -582,7 +573,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((bishopAttacks & EMPTY_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -596,17 +586,14 @@ func PerftInline(depth int, ply int) uint64 {
 
 			tempBitboard = PieceArray[WQ]
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[whiteKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -618,7 +605,6 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((queenAttacks & BLACK_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -631,7 +617,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((queenAttacks & EMPTY_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -642,17 +627,15 @@ func PerftInline(depth int, ply int) uint64 {
 					moveCount++
 				}
 			}
-
 		}
 	} else { //black move
-
 		var blackKingCheckCount = 0
+
 		var blackKingPosition = (DEBRUIJN64[MAGIC*(PieceArray[BK]^(PieceArray[BK]-1))>>58])
 
 		//pawns
 		tempBitboard = PieceArray[WP] & BLACK_PAWN_ATTACKS[blackKingPosition]
 		if tempBitboard != 0 {
-
 			var pawn_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			checkBitboard = SQUARE_BBS[pawn_square]
 			blackKingCheckCount++
@@ -660,8 +643,8 @@ func PerftInline(depth int, ply int) uint64 {
 
 		//knights
 		tempBitboard = PieceArray[WN] & KNIGHT_ATTACKS[blackKingPosition]
-		if tempBitboard != 0 {
 
+		if tempBitboard != 0 {
 			var knight_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			checkBitboard = SQUARE_BBS[knight_square]
 
@@ -671,137 +654,139 @@ func PerftInline(depth int, ply int) uint64 {
 		//bishops
 		var bishopAttacksChecks = GetBishopAttacksFast(blackKingPosition, WHITE_OCCUPANCIES)
 		tempBitboard = PieceArray[WB] & bishopAttacksChecks
-		for tempBitboard != 0 {
 
+		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-
 				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
-
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
-
 					pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square
 					pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		//queen
 		tempBitboard = PieceArray[WQ] & bishopAttacksChecks
 		for tempBitboard != 0 {
-
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-
 				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
-
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
-
 					pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square
 					pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		//rook
 		var rook_attacks = GetRookAttacksFast(blackKingPosition, WHITE_OCCUPANCIES)
 		tempBitboard = PieceArray[WR] & rook_attacks
-		for tempBitboard != 0 {
 
+		for tempBitboard != 0 {
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-
 				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
-
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
-
 					pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square
 					pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		//queen
 		tempBitboard = PieceArray[WQ] & rook_attacks
 		for tempBitboard != 0 {
-
 			var piece_square = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 			tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square] & BLACK_OCCUPANCIES
 
 			if tempPinBitboard == 0 {
-
 				checkBitboard = INBETWEEN_BITBOARDS[blackKingPosition][piece_square]
 				blackKingCheckCount++
 			} else {
-
 				var pinned_square = (DEBRUIJN64[MAGIC*(tempPinBitboard^(tempPinBitboard-1))>>58])
+
 				tempPinBitboard &= tempPinBitboard - 1
 
 				if tempPinBitboard == 0 {
-
 					pinArray[pinNumber][PINNED_SQUARE_INDEX] = pinned_square
 					pinArray[pinNumber][PINNING_PIECE_INDEX] = piece_square
 					pinNumber++
 				}
 			}
+
 			tempBitboard &= tempBitboard - 1
 		}
 
 		var occupancyWithoutBlackKing = COMBINED_OCCUPANCIES & (^PieceArray[BK])
+
 		tempAttack = KING_ATTACKS[blackKingPosition] & WHITE_OCCUPANCIES
 
 		for tempAttack != 0 {
-
 			targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 			tempAttack &= tempAttack - 1
 
 			if (PieceArray[WP] & BLACK_PAWN_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[WN] & KNIGHT_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[WK] & KING_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			var bishopAttacks = GetBishopAttacksFast(targetSquare, occupancyWithoutBlackKing)
+
 			if (PieceArray[WB] & bishopAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[WQ] & bishopAttacks) != 0 {
 				continue
 			}
+
 			var rookAttacks = GetRookAttacksFast(targetSquare, occupancyWithoutBlackKing)
+
 			if (PieceArray[WR] & rookAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[WQ] & rookAttacks) != 0 {
 				continue
 			}
@@ -822,23 +807,31 @@ func PerftInline(depth int, ply int) uint64 {
 			if (PieceArray[WP] & BLACK_PAWN_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[WN] & KNIGHT_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			if (PieceArray[WK] & KING_ATTACKS[targetSquare]) != 0 {
 				continue
 			}
+
 			var bishopAttacks = GetBishopAttacksFast(targetSquare, occupancyWithoutBlackKing)
+
 			if (PieceArray[WB] & bishopAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[WQ] & bishopAttacks) != 0 {
 				continue
 			}
+
 			var rookAttacks = GetRookAttacksFast(targetSquare, occupancyWithoutBlackKing)
+
 			if (PieceArray[WR] & rookAttacks) != 0 {
 				continue
 			}
+
 			if (PieceArray[WQ] & rookAttacks) != 0 {
 				continue
 			}
@@ -851,7 +844,6 @@ func PerftInline(depth int, ply int) uint64 {
 		}
 
 		if blackKingCheckCount < 2 {
-
 			if blackKingCheckCount == 0 {
 				checkBitboard = MAX_ULONG
 			}
@@ -863,9 +855,9 @@ func PerftInline(depth int, ply int) uint64 {
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
@@ -873,11 +865,8 @@ func PerftInline(depth int, ply int) uint64 {
 				}
 
 				if (SQUARE_BBS[startingSquare+8] & COMBINED_OCCUPANCIES) == 0 { //if up one square is empty
-
 					if ((SQUARE_BBS[startingSquare+8] & checkBitboard) & tempPinBitboard) != 0 {
-
 						if (SQUARE_BBS[startingSquare] & RANK_2_BITBOARD) != 0 { //if promotion
-
 							moveList[moveCount][MOVE_STARTING] = startingSquare
 							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
 							moveList[moveCount][MOVE_TAG] = TAG_BBishopPromotion
@@ -902,7 +891,6 @@ func PerftInline(depth int, ply int) uint64 {
 							moveList[moveCount][MOVE_PIECE] = BP
 							moveCount++
 						} else {
-
 							moveList[moveCount][MOVE_STARTING] = startingSquare
 							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
 							moveList[moveCount][MOVE_TAG] = TAG_NONE
@@ -912,11 +900,8 @@ func PerftInline(depth int, ply int) uint64 {
 					}
 
 					if (SQUARE_BBS[startingSquare] & RANK_7_BITBOARD) != 0 { //if on rank 2
-
 						if ((SQUARE_BBS[startingSquare+16] & checkBitboard) & tempPinBitboard) != 0 {
-
 							if ((SQUARE_BBS[startingSquare+16]) & COMBINED_OCCUPANCIES) == 0 { //if up two squares and one square are empty
-
 								moveList[moveCount][MOVE_STARTING] = startingSquare
 								moveList[moveCount][MOVE_TARGET] = startingSquare + 16
 								moveList[moveCount][MOVE_TAG] = TAG_DoublePawnBlack
@@ -930,12 +915,10 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((BLACK_PAWN_ATTACKS[startingSquare] & WHITE_OCCUPANCIES) & checkBitboard) & tempPinBitboard //if black piece diagonal to pawn
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58]) //find the bit
 					tempAttack &= tempAttack - 1
 
 					if (SQUARE_BBS[startingSquare] & RANK_2_BITBOARD) != 0 { //if promotion
-
 						moveList[moveCount][MOVE_STARTING] = startingSquare
 						moveList[moveCount][MOVE_TARGET] = targetSquare
 						moveList[moveCount][MOVE_TAG] = TAG_BCaptureQueenPromotion
@@ -960,7 +943,6 @@ func PerftInline(depth int, ply int) uint64 {
 						moveList[moveCount][MOVE_PIECE] = BP
 						moveCount++
 					} else {
-
 						moveList[moveCount][MOVE_STARTING] = startingSquare
 						moveList[moveCount][MOVE_TARGET] = targetSquare
 						moveList[moveCount][MOVE_TAG] = TAG_CAPTURE
@@ -970,34 +952,27 @@ func PerftInline(depth int, ply int) uint64 {
 				}
 
 				if (SQUARE_BBS[startingSquare] & RANK_4_BITBOARD) != 0 { //check rank for ep
-
 					if ep != NO_SQUARE {
-
 						if (((BLACK_PAWN_ATTACKS[startingSquare] & SQUARE_BBS[ep]) & checkBitboard) & tempPinBitboard) != 0 {
-
 							if (PieceArray[BK] & RANK_4_BITBOARD) == 0 { //if no king on rank 5
-
 								moveList[moveCount][MOVE_STARTING] = startingSquare
 								moveList[moveCount][MOVE_TARGET] = int(ep)
 								moveList[moveCount][MOVE_TAG] = TAG_BLACKEP
 								moveList[moveCount][MOVE_PIECE] = BP
 								moveCount++
 							} else if (PieceArray[WR]&RANK_4_BITBOARD) == 0 && (PieceArray[WQ]&RANK_4_BITBOARD) == 0 { // if no b rook or queen on rank 5
-
 								moveList[moveCount][MOVE_STARTING] = startingSquare
 								moveList[moveCount][MOVE_TARGET] = int(ep)
 								moveList[moveCount][MOVE_TAG] = TAG_BLACKEP
 								moveList[moveCount][MOVE_PIECE] = BP
 								moveCount++
 							} else { //wk and br or bq on rank 5
-
 								var occupancyWithoutEPPawns = COMBINED_OCCUPANCIES & ^SQUARE_BBS[startingSquare]
 								occupancyWithoutEPPawns &= ^SQUARE_BBS[ep-8]
 
 								var rookAttacksFromKing = GetRookAttacksFast(blackKingPosition, occupancyWithoutEPPawns)
 
 								if (rookAttacksFromKing & PieceArray[WR]) == 0 {
-
 									if (rookAttacksFromKing & PieceArray[WQ]) == 0 {
 										moveList[moveCount][MOVE_STARTING] = startingSquare
 										moveList[moveCount][MOVE_TARGET] = int(ep)
@@ -1015,17 +990,14 @@ func PerftInline(depth int, ply int) uint64 {
 			tempBitboard = PieceArray[BN]
 
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58]) //looks for the startingSquare
 				tempBitboard &= tempBitboard - 1                                         //removes the knight from that square to not infinitely loop
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -1033,7 +1005,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((KNIGHT_ATTACKS[startingSquare] & WHITE_OCCUPANCIES) & checkBitboard) & tempPinBitboard //gets knight captures
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1047,7 +1018,6 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((KNIGHT_ATTACKS[startingSquare] & (^COMBINED_OCCUPANCIES)) & checkBitboard) & tempPinBitboard
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1060,17 +1030,16 @@ func PerftInline(depth int, ply int) uint64 {
 			}
 
 			tempBitboard = PieceArray[BB]
-			for tempBitboard != 0 {
 
+			for tempBitboard != 0 {
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -1080,7 +1049,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((bishopAttacks & WHITE_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1093,7 +1061,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((bishopAttacks & (^COMBINED_OCCUPANCIES)) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1107,17 +1074,14 @@ func PerftInline(depth int, ply int) uint64 {
 
 			tempBitboard = PieceArray[BR]
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -1127,7 +1091,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((rookAttacks & WHITE_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1140,7 +1103,6 @@ func PerftInline(depth int, ply int) uint64 {
 
 				tempAttack = ((rookAttacks & (^COMBINED_OCCUPANCIES)) & checkBitboard) & tempPinBitboard
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1154,17 +1116,14 @@ func PerftInline(depth int, ply int) uint64 {
 
 			tempBitboard = PieceArray[BQ]
 			for tempBitboard != 0 {
-
 				startingSquare = (DEBRUIJN64[MAGIC*(tempBitboard^(tempBitboard-1))>>58])
 				tempBitboard &= tempBitboard - 1
 
 				tempPinBitboard = MAX_ULONG
+
 				if pinNumber != 0 {
-
 					for i := 0; i < pinNumber; i++ {
-
 						if pinArray[i][PINNED_SQUARE_INDEX] == startingSquare {
-
 							tempPinBitboard = INBETWEEN_BITBOARDS[blackKingPosition][pinArray[i][PINNING_PIECE_INDEX]]
 						}
 					}
@@ -1176,7 +1135,6 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((queenAttacks & WHITE_OCCUPANCIES) & checkBitboard) & tempPinBitboard
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1190,7 +1148,6 @@ func PerftInline(depth int, ply int) uint64 {
 				tempAttack = ((queenAttacks & (^COMBINED_OCCUPANCIES)) & checkBitboard) & tempPinBitboard
 
 				for tempAttack != 0 {
-
 					targetSquare = (DEBRUIJN64[MAGIC*(tempAttack^(tempAttack-1))>>58])
 					tempAttack &= tempAttack - 1
 
@@ -1202,6 +1159,7 @@ func PerftInline(depth int, ply int) uint64 {
 				}
 			}
 		}
+
 		if blackKingCheckCount == 0 {
 			if CastleRights[BKS_CASTLE_RIGHTS] {
 				if blackKingPosition == E8 { //king on e1
@@ -1246,8 +1204,11 @@ func PerftInline(depth int, ply int) uint64 {
 	}
 
 	var nodes uint64 = 0
+
 	var priorNodes uint64
+
 	var copyEp = ep
+
 	var copyCastle [4]bool
 	copyCastle[0] = CastleRights[0]
 	copyCastle[1] = CastleRights[1]
@@ -1255,10 +1216,12 @@ func PerftInline(depth int, ply int) uint64 {
 	copyCastle[3] = CastleRights[3]
 
 	for moveIndex := 0; moveIndex < int(moveCount); moveIndex++ {
-
 		var startingSquare = moveList[moveIndex][MOVE_STARTING]
+
 		var targetSquare = moveList[moveIndex][MOVE_TARGET]
+
 		var piece = moveList[moveIndex][MOVE_PIECE]
+
 		var tag = moveList[moveIndex][MOVE_TAG]
 
 		var captureIndex = -1
@@ -1277,60 +1240,52 @@ func PerftInline(depth int, ply int) uint64 {
 		case TAG_CAPTURE: //capture
 			PieceArray[piece] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
+
 			if PieceIsWhite(piece) {
-
 				for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
-
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 						captureIndex = i
 						break
 					}
 				}
+
 				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
-
-			} else { //is black
-
+			} else { // is black
 				for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
-
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 						captureIndex = i
 						break
 					}
 				}
-				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
+				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 			}
+
 			ep = NO_SQUARE
 		case TAG_CHECK_CAPTURE: //check cap
 			PieceArray[piece] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
+
 			if PieceIsWhite(piece) {
-
 				for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
-
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 						captureIndex = i
 						break
 					}
 				}
-				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
+				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 			} else { //is black
-
 				for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
-
 					if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 						captureIndex = i
 						break
 					}
 				}
-				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
+				PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 			}
+
 			ep = NO_SQUARE
 		case TAG_WHITEEP: //white ep
 			//move piece
@@ -1437,14 +1392,14 @@ func PerftInline(depth int, ply int) uint64 {
 			PieceArray[BN] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 17: //BBPrCAP
@@ -1452,98 +1407,98 @@ func PerftInline(depth int, ply int) uint64 {
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 
 			ep = NO_SQUARE
+
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 18: //BQPrCAP
 			PieceArray[BQ] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 19: //BRPrCAP
 			PieceArray[BR] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := WHITE_START_INDEX; i <= WHITE_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 20: //WNPrCAP
 			PieceArray[WN] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 21: //WBPrCAP
 			PieceArray[WB] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 22: //WQPrCAP
 			PieceArray[WQ] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 23: //WRPrCAP
 			PieceArray[WR] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
+
 			for i := BLACK_START_INDEX; i <= BLACK_END_INDEX; i++ {
-
 				if (PieceArray[i] & SQUARE_BBS[targetSquare]) != 0 {
-
 					captureIndex = i
 					break
 				}
 			}
+
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
 		case 24: //WDouble
@@ -1570,6 +1525,7 @@ func PerftInline(depth int, ply int) uint64 {
 					CastleRights[WKS_CASTLE_RIGHTS] = false
 				}
 			}
+
 			if CastleRights[WQS_CASTLE_RIGHTS] {
 				if (PieceArray[WR] & SQUARE_BBS[A1]) == 0 {
 					CastleRights[WQS_CASTLE_RIGHTS] = false
@@ -1581,6 +1537,7 @@ func PerftInline(depth int, ply int) uint64 {
 					CastleRights[BKS_CASTLE_RIGHTS] = false
 				}
 			}
+
 			if CastleRights[BQS_CASTLE_RIGHTS] {
 				if (PieceArray[BR] & SQUARE_BBS[A8]) == 0 {
 					CastleRights[BQS_CASTLE_RIGHTS] = false
@@ -1592,6 +1549,7 @@ func PerftInline(depth int, ply int) uint64 {
 		nodes += PerftInline(depth-1, ply+1)
 
 		whiteToPlay = !whiteToPlay
+
 		switch tag {
 		case TAG_NONE: //none
 			PieceArray[piece] |= SQUARE_BBS[startingSquare]
@@ -1606,17 +1564,17 @@ func PerftInline(depth int, ply int) uint64 {
 
 			if PieceIsWhite(piece) {
 				PieceArray[captureIndex] |= SQUARE_BBS[targetSquare]
-			} else { //is black
-
+			} else {
+				//is black
 				PieceArray[captureIndex] |= SQUARE_BBS[targetSquare]
 			}
 		case TAG_CHECK_CAPTURE: //check cap
 			PieceArray[piece] |= SQUARE_BBS[startingSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[targetSquare]
+
 			if PieceIsWhite(piece) {
 				PieceArray[captureIndex] |= SQUARE_BBS[targetSquare]
 			} else { //is black
-
 				PieceArray[captureIndex] |= SQUARE_BBS[targetSquare]
 			}
 
@@ -1741,7 +1699,6 @@ func PerftInline(depth int, ply int) uint64 {
 		case TAG_DoublePawnBlack: //BDouble
 			PieceArray[BP] |= SQUARE_BBS[startingSquare]
 			PieceArray[BP] &= ^SQUARE_BBS[targetSquare]
-
 		}
 
 		CastleRights[0] = copyCastle[0]
@@ -1760,10 +1717,12 @@ func PerftInline(depth int, ply int) uint64 {
 }
 
 func RunPerftInline(depth int) {
-
 	fmt.Println("-----")
+
 	timestamp_start := time.Now()
+
 	var nodes = PerftInline(depth, 0)
+
 	elapsed := time.Since(timestamp_start)
 
 	fmt.Println("-----")

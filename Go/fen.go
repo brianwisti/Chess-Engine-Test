@@ -36,11 +36,13 @@ func LoadFen(fen string) {
 	ResetBoard()
 
 	var bracketCount = 0
+
 	var squareCount = 0
 
 	var setting = Pieces
 
 	var ep_file_index = -1
+
 	var ep_rank_index = -1
 
 	for character_index := 0; character_index < len(fen); character_index++ {
@@ -65,16 +67,18 @@ func Load_Fen_Sort_Pieces(bracketCount *int, character_in_fen byte, setting *int
 		*setting++
 		return
 	}
+
 	if *bracketCount > 7 {
 		*bracketCount = 0
 	}
+
 	if *squareCount > 7 {
 		*squareCount = 0
 	}
+
 	var square = (*bracketCount * 8) + *squareCount
 
 	switch character_in_fen {
-
 	case 'B':
 		PieceArray[WB] = SetBit(PieceArray[WB], square)
 		*squareCount++
@@ -161,21 +165,21 @@ func Load_Fen_Sort_Castling(setting *int, character_in_fen byte) {
 		*setting++
 	}
 }
-func Load_Fen_Sort_EP(setting *int, character_in_fen byte, file_index *int, rank_index *int) {
 
+func Load_Fen_Sort_EP(setting *int, character_in_fen byte, file_index *int, rank_index *int) {
 	if character_in_fen == '-' {
 		ep = NO_SQUARE
 	}
-	if character_in_fen == ' ' {
 
+	if character_in_fen == ' ' {
 		if *file_index != -1 && *rank_index != -1 {
 			ep = uint8(Convert_to_64(*file_index, *rank_index))
 		}
+
 		*setting++
 	}
 
 	switch character_in_fen {
-
 	case 'a':
 		*file_index = 0
 		return
@@ -203,7 +207,6 @@ func Load_Fen_Sort_EP(setting *int, character_in_fen byte, file_index *int, rank
 	}
 
 	switch character_in_fen {
-
 	case '1':
 		*rank_index = 7
 		return

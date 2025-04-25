@@ -9,7 +9,6 @@ var ep uint8 = NO_SQUARE
 var BoardPly uint8 = 0
 
 func SetStartingPosition() {
-
 	ep = NO_SQUARE
 	whiteToPlay = true
 	CastleRights[0] = true
@@ -33,20 +32,21 @@ func SetStartingPosition() {
 
 func PrintBoard() {
 	fmt.Println("Board:")
+
 	var boardArray = [64]int(FillBoardArray())
 
 	for rank := 0; rank < 8; rank++ {
-
 		fmt.Print("   ")
 
 		for file := 0; file < 8; file++ {
-
 			var square = (rank * 8) + file
+
 			fmt.Printf("%c%c ", PieceColours[boardArray[square]], PieceNames[boardArray[square]])
 		}
 
 		fmt.Println()
 	}
+
 	fmt.Println()
 
 	fmt.Printf("White to play: %t\n", whiteToPlay)
@@ -62,7 +62,6 @@ func PrintAllBitboards() {
 	for i := 0; i < 12; i++ {
 		fmt.Println(PieceArray[i])
 	}
-
 }
 
 func FillBoardArray() []int {
@@ -70,6 +69,7 @@ func FillBoardArray() []int {
 	for i := 0; i < 64; i++ {
 		boardArray[i] = GetOccupiedIndex(i)
 	}
+
 	return boardArray[:]
 }
 
@@ -77,9 +77,11 @@ func IsBoardArraySame(copy [12]uint64) bool {
 	for i := 0; i < 12; i++ {
 		if PieceArray[i] != copy[i] {
 			fmt.Printf("ERROR piece not same: %d\n", i)
+
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -91,10 +93,13 @@ func PrintBitboard(bitboard uint64) {
 				fmt.Print("X ")
 				continue
 			}
+
 			fmt.Print("_ ")
 		}
+
 		fmt.Println()
 	}
+
 	fmt.Println(bitboard)
 }
 
@@ -102,11 +107,13 @@ func ResetBoard() {
 	for i := 0; i < 12; i++ {
 		PieceArray[i] = EMPTY_BITBOARD
 	}
+
 	whiteToPlay = true
+
 	for i := 0; i < 4; i++ {
 		CastleRights[i] = true
 	}
+
 	ep = NO_SQUARE
 	BoardPly = 0
-
 }
