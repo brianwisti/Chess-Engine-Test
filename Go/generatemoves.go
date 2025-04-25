@@ -1,9 +1,11 @@
 package main
 
+const TotalSquares = 64
+
 func GetRookAttacksFast(startingSquare int, occupancy uint64) uint64 {
 	occupancy &= ROOK_MASKS[startingSquare]
 	occupancy *= ROOK_MAGIC_NUMBERS[startingSquare]
-	occupancy >>= 64 - ROOK_REL_BITS[startingSquare]
+	occupancy >>= TotalSquares - ROOK_REL_BITS[startingSquare]
 
 	return ROOK_ATTACKS[startingSquare][occupancy]
 }
@@ -11,7 +13,7 @@ func GetRookAttacksFast(startingSquare int, occupancy uint64) uint64 {
 func GetBishopAttacksFast(startingSquare int, occupancy uint64) uint64 {
 	occupancy &= BISHOP_MASKS[startingSquare]
 	occupancy *= BISHOP_MAGIC_NUMBERS[startingSquare]
-	occupancy >>= 64 - BISHOP_REL_BITS[startingSquare]
+	occupancy >>= TotalSquares - BISHOP_REL_BITS[startingSquare]
 
 	return BISHOP_ATTACKS[startingSquare][occupancy]
 }

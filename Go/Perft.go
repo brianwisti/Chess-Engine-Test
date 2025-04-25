@@ -6,6 +6,8 @@ import (
 )
 
 func PerftInline(depth int, ply int) uint64 {
+	const doubleCheckCount = 2
+
 	var moveList [50][4]int
 
 	var moveCount uint64 = 0
@@ -276,7 +278,7 @@ func PerftInline(depth int, ply int) uint64 {
 		}
 
 		//If double check
-		if whiteKingCheckCount < 2 {
+		if whiteKingCheckCount < doubleCheckCount {
 			if whiteKingCheckCount == 0 {
 				checkBitboard = MAX_ULONG
 			}
@@ -381,31 +383,31 @@ func PerftInline(depth int, ply int) uint64 {
 					if ((SQUARE_BBS[startingSquare-8] & checkBitboard) & tempPinBitboard) != 0 {
 						if (SQUARE_BBS[startingSquare] & RANK_7_BITBOARD) != 0 { //if promotion
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare - TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_WQueenPromotion
 							moveList[moveCount][MOVE_PIECE] = WP
 							moveCount++
 
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare - TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_WRookPromotion
 							moveList[moveCount][MOVE_PIECE] = WP
 							moveCount++
 
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare - TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_WBishopPromotion
 							moveList[moveCount][MOVE_PIECE] = WP
 							moveCount++
 
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare - TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_WKnightPromotion
 							moveList[moveCount][MOVE_PIECE] = WP
 							moveCount++
 						} else {
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare - 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare - TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_NONE
 							moveList[moveCount][MOVE_PIECE] = WP
 							moveCount++
@@ -416,7 +418,7 @@ func PerftInline(depth int, ply int) uint64 {
 						if ((SQUARE_BBS[startingSquare-16] & checkBitboard) & tempPinBitboard) != 0 { //if not pinned or
 							if ((SQUARE_BBS[startingSquare-16]) & COMBINED_OCCUPANCIES) == 0 { //if up two squares and one square are empty
 								moveList[moveCount][MOVE_STARTING] = startingSquare
-								moveList[moveCount][MOVE_TARGET] = startingSquare - 16
+								moveList[moveCount][MOVE_TARGET] = startingSquare - TilesInTwoRanks
 								moveList[moveCount][MOVE_TAG] = TAG_DoublePawnWhite
 								moveList[moveCount][MOVE_PIECE] = WP
 								moveCount++
@@ -843,7 +845,7 @@ func PerftInline(depth int, ply int) uint64 {
 			moveCount++
 		}
 
-		if blackKingCheckCount < 2 {
+		if blackKingCheckCount < doubleCheckCount {
 			if blackKingCheckCount == 0 {
 				checkBitboard = MAX_ULONG
 			}
@@ -868,31 +870,31 @@ func PerftInline(depth int, ply int) uint64 {
 					if ((SQUARE_BBS[startingSquare+8] & checkBitboard) & tempPinBitboard) != 0 {
 						if (SQUARE_BBS[startingSquare] & RANK_2_BITBOARD) != 0 { //if promotion
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare + TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_BBishopPromotion
 							moveList[moveCount][MOVE_PIECE] = BP
 							moveCount++
 
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare + TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_BKnightPromotion
 							moveList[moveCount][MOVE_PIECE] = BP
 							moveCount++
 
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare + TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_BRookPromotion
 							moveList[moveCount][MOVE_PIECE] = BP
 							moveCount++
 
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare + TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_BQueenPromotion
 							moveList[moveCount][MOVE_PIECE] = BP
 							moveCount++
 						} else {
 							moveList[moveCount][MOVE_STARTING] = startingSquare
-							moveList[moveCount][MOVE_TARGET] = startingSquare + 8
+							moveList[moveCount][MOVE_TARGET] = startingSquare + TilesInRank
 							moveList[moveCount][MOVE_TAG] = TAG_NONE
 							moveList[moveCount][MOVE_PIECE] = BP
 							moveCount++
@@ -903,7 +905,7 @@ func PerftInline(depth int, ply int) uint64 {
 						if ((SQUARE_BBS[startingSquare+16] & checkBitboard) & tempPinBitboard) != 0 {
 							if ((SQUARE_BBS[startingSquare+16]) & COMBINED_OCCUPANCIES) == 0 { //if up two squares and one square are empty
 								moveList[moveCount][MOVE_STARTING] = startingSquare
-								moveList[moveCount][MOVE_TARGET] = startingSquare + 16
+								moveList[moveCount][MOVE_TARGET] = startingSquare + TilesInTwoRanks
 								moveList[moveCount][MOVE_TAG] = TAG_DoublePawnBlack
 								moveList[moveCount][MOVE_PIECE] = BP
 								moveCount++
@@ -1215,6 +1217,7 @@ func PerftInline(depth int, ply int) uint64 {
 	copyCastle[2] = CastleRights[2]
 	copyCastle[3] = CastleRights[3]
 
+
 	for moveIndex := range moveCount {
 		var startingSquare = moveList[moveIndex][MOVE_STARTING]
 
@@ -1352,47 +1355,47 @@ func PerftInline(depth int, ply int) uint64 {
 			CastleRights[BQS_CASTLE_RIGHTS] = false
 			ep = NO_SQUARE
 
-		case TAG_BKnightPromotion: //BNPr
+		case TAG_BKnightPromotion:
 			PieceArray[BN] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case TAG_BBishopPromotion: //BBPr
+		case TAG_BBishopPromotion:
 			PieceArray[BB] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case TAG_BQueenPromotion: //BQPr
+		case TAG_BQueenPromotion:
 			PieceArray[BQ] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case TAG_BRookPromotion: //BRPr
+		case TAG_BRookPromotion:
 			PieceArray[BR] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case 12: //WNPr
+		case TAG_WKnightPromotion:
 			PieceArray[WN] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case 13: //WBPr
+		case TAG_WBishopPromotion:
 			PieceArray[WB] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case 14: //WQPr
+		case TAG_WQueenPromotion:
 			PieceArray[WQ] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case 15: //WRPr
+		case TAG_WRookPromotion:
 			PieceArray[WR] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
 
-		case 16: //BNPrCAP
+		case TAG_BCaptureKnightPromotion:
 			PieceArray[BN] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1407,7 +1410,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 17: //BBPrCAP
+		case TAG_BCaptureBishopPromotion:
 			PieceArray[BB] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 
@@ -1423,7 +1426,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 18: //BQPrCAP
+		case TAG_BCaptureQueenPromotion:
 			PieceArray[BQ] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1438,7 +1441,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 19: //BRPrCAP
+		case TAG_BCaptureRookPromotion:
 			PieceArray[BR] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1453,7 +1456,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 20: //WNPrCAP
+		case TAG_WCaptureKnightPromotion:
 			PieceArray[WN] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1468,7 +1471,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 21: //WBPrCAP
+		case TAG_WCaptureBishopPromotion:
 			PieceArray[WB] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1483,7 +1486,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 22: //WQPrCAP
+		case TAG_WCaptureQueenPromotion:
 			PieceArray[WQ] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1498,7 +1501,7 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 23: //WRPrCAP
+		case TAG_WCaptureRookPromotion:
 			PieceArray[WR] |= SQUARE_BBS[targetSquare]
 			PieceArray[piece] &= ^SQUARE_BBS[startingSquare]
 			ep = NO_SQUARE
@@ -1513,15 +1516,15 @@ func PerftInline(depth int, ply int) uint64 {
 
 			PieceArray[captureIndex] &= ^SQUARE_BBS[targetSquare]
 
-		case 24: //WDouble
+		case TAG_DoublePawnWhite:
 			PieceArray[WP] |= SQUARE_BBS[targetSquare]
 			PieceArray[WP] &= ^SQUARE_BBS[startingSquare]
-			ep = uint8(targetSquare + 8)
+			ep = uint8(targetSquare + TilesInRank)
 
-		case 25: //BDouble
+		case TAG_DoublePawnBlack:
 			PieceArray[BP] |= SQUARE_BBS[targetSquare]
 			PieceArray[BP] &= ^SQUARE_BBS[startingSquare]
-			ep = uint8(targetSquare - 8)
+			ep = uint8(targetSquare - TilesInRank)
 		}
 
 		switch piece {

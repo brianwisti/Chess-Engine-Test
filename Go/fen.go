@@ -63,21 +63,23 @@ func LoadFen(fen string) {
 	}
 }
 func Load_Fen_Sort_Pieces(bracketCount *int, character_in_fen byte, setting *int, squareCount *int) {
-	if *bracketCount == 7 && character_in_fen == ' ' {
+	const bracketLimit = 7
+
+	if *bracketCount == bracketLimit && character_in_fen == ' ' {
 		*setting++
 
 		return
 	}
 
-	if *bracketCount > 7 {
+	if *bracketCount > bracketLimit {
 		*bracketCount = 0
 	}
 
-	if *squareCount > 7 {
+	if *squareCount > bracketLimit {
 		*squareCount = 0
 	}
 
-	var square = (*bracketCount * 8) + *squareCount
+	var square = (*bracketCount * TilesInRank) + *squareCount
 
 	switch character_in_fen {
 	case 'B':
@@ -251,7 +253,7 @@ func Load_Fen_Sort_EP(setting *int, character_in_fen byte, file_index *int, rank
 	}
 }
 func Convert_to_64(file int, rank int) int {
-	return (rank * 8) + file
+	return (rank * TilesInRank) + file
 }
 func Load_Fen_Sort_Fifty_Move(setting *int, character_in_fen byte) {
 	if character_in_fen == ' ' {

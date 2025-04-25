@@ -35,11 +35,11 @@ func PrintBoard() {
 
 	var boardArray = [64]int(FillBoardArray())
 
-	for rank := range 8 {
+	for rank := range TilesInRank {
 		fmt.Print("   ")
 
-		for file := range 8 {
-			var square = (rank * 8) + file
+		for file := range TilesInRank {
+			var square = (rank * TilesInRank) + file
 
 			fmt.Printf("%c%c ", PieceColours[boardArray[square]], PieceNames[boardArray[square]])
 		}
@@ -86,9 +86,9 @@ func IsBoardArraySame(boardCopy [12]uint64) bool {
 }
 
 func PrintBitboard(bitboard uint64) {
-	for rank := range 8 {
-		for file := range 8 {
-			var square = (rank * 8) + file
+	for rank := range TilesInRank {
+		for file := range TilesInRank {
+			var square = (rank * TilesInRank) + file
 			if (bitboard & (ONE_U64 << square)) != 0 {
 				fmt.Print("X ")
 

@@ -1,5 +1,8 @@
 package main
 
+const TilesInRank = 8
+const TilesInTwoRanks = 16
+
 const A8 = 0
 const B8 = 1
 const C8 = 2

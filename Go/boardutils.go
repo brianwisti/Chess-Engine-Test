@@ -15,11 +15,13 @@ func GetOccupiedIndex(square int) int {
 }
 
 func OutOfBounds(move int) bool {
+	const lastTile = 64
+
 	if move < 0 {
 		return true
 	}
 
-	if move > 63 {
+	if move > lastTile {
 		return true
 	}
 
